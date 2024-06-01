@@ -4,6 +4,19 @@ This project was bootstrapped with Dynatrace App Toolkit.
 
 It uses React in combination with TypeScript, to provide great developer experience.
 
+# To get started:
+
+Git clone the repository.
+Go to the file app.config.json and update the environmentURL to your environment.
+## Install the dependencies
+```npm install```
+## Start the app in development mode
+```npm run start```
+## Make Changes
+
+## Deploy to your tenant:
+```npm run deploy```
+
 ## Available Scripts
 
 In the project directory, you can run:
