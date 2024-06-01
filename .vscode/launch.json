@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch app for function debugging",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "start"],
+      "type": "node",
+      "resolveSourceMapLocations": ["**/*.js", "**/*.ts"],
+      // The folder name `api` needs to be adjusted if `build.functions.input`
+      // is changed in app.config.ts
+      "runtimeSourcemapPausePatterns": ["**/api/**/*"],
+    },
+    {
+      "name": "Launch Chrome for UI debugging",
+      "request": "launch",
+      "type": "chrome",
+      // Needs to be updated when `environmentUrl` is changed in app.config.ts
+      "url": "https://joh43990.sprint.apps.dynatracelabs.com/ui/apps/local-dev-server/?locationAppIds=http%3A%2F%2Flocalhost%3A3000%2Fui%2Clocal-dev-server",
+      "pathMapping": {
+        "/": "${workspaceFolder}",
+        "localhost:3000/": "${workspaceFolder}"
+      },
+      "preLaunchTask": "Watch"
+    },
+    {
+      "name": "Attach to Chrome",
+      "port": 9222,
+      "request": "attach",
+      "type": "chrome",
+      "pathMapping": {
+        "/": "${workspaceFolder}",
+        "localhost:3000/": "${workspaceFolder}"
+      }
+    }
+  ]
+}
