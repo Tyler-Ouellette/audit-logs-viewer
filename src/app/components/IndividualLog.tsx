@@ -1,5 +1,4 @@
 import React from "react";
-import { Card } from "./Card";
 import { Flex, Grid, Surface } from "@dynatrace/strato-components-preview";
 import { BugReportIcon, CodeIcon, ContainerIcon, DesktopIcon, LockIcon, ManualIcon, OneAgentSignetIcon } from '@dynatrace/strato-icons';
 import Colors from '@dynatrace/strato-design-tokens/colors';
@@ -111,7 +110,6 @@ export const IndividualLog = ({ log }) => {
                         </div>
                     )
                 })}</div>
-                {/* <Card name="test" href="fake" inAppLink={false} imgSrc="test" /> */}
             </Flex>
         </Surface>
     );
