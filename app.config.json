@@ -6,5 +6,6 @@
     "description": "A starting project with routing, fetching data, and charting",
     "id": "my.audit.logs.viewer",
     "scopes": [{ "name": "storage:logs:read", "comment": "default template" }, { "name": "storage:buckets:read", "comment": "default template" }, { "name": "environment-api:audit-logs:read", "comment": "Read Audit Logs"}]
-  }
+  },
+  "icon": "./src/assets/auditLogsIcon.png"
 }
