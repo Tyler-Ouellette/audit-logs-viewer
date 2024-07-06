@@ -1,7 +1,7 @@
 {
   "name": "audit-logs-viewer",
-  "version": "0.0.0",
-  "description": "A starting project with routing, fetching data, and charting",
+  "version": "0.0.2",
+  "description": "Review the audit logs of this environment.",
   "scripts": {
     "build": "dt-app build --prod",
     "start": "dt-app dev",
@@ -29,7 +29,9 @@
     "@dynatrace-sdk/react-hooks": "0.4.1",
     "@dynatrace-sdk/user-preferences": "1.1.1",
     "@dynatrace/strato-components-preview": "0.113.2",
-    "@dynatrace/strato-icons": "0.36.1",
+    "@dynatrace/strato-icons": "^0.36.1",
+    "@microlink/react-json-view": "^1.23.0",
+    "deep-diff": "^1.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intl": "6.6.2",
