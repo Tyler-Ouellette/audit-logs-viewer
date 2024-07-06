@@ -95,7 +95,12 @@ const auditColumns: TableColumn[] = [
                 autoWidth: true,
                 alignment: 'center',
                 cell: ({ value, row }) => {
-                    return value.toUpperCase();
+                    if (typeof (value) === "string") {
+                        return value.toUpperCase();
+                    }
+                    else {
+                        return value;
+                    }
                 },
                 thresholds: [
                     {
@@ -393,11 +398,8 @@ export const SettingsLogs = () => {
             type: 'expression',
         },
     });
-    const [oldestQuery, setOldestQuery] = useState<string>('');
-    // const [filteredData, setFilteredData] = useState<Array<any>>([]);
-
-
-
+    const [oldestTimeFrame, setOldestTimeFrame] = useState<string>('');
+    const [lastSelectedDate, setLastSelectedDate] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [showSheet, setShowSheet] = useState<boolean>(false);
     const [auditLogs, setAuditLogs] = useState<Array<any>>([]);
@@ -405,7 +407,8 @@ export const SettingsLogs = () => {
     const [eventTypes, setEventTypes] = useState<Array<any>>([]);
     const [schemaIds, setschemaIds] = useState<Array<any>>([]);
     const [userOrgs, setUserOrgs] = useState<Array<any>>([]);
-    const [originalLogs, setOriginalLogs] = useState<Array<any>>([]);
+    const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
+    const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
     const [logCount, setLogCount] = useState<String>('');
     const [selectedSchemas, setSelectedSchemas] = useState<Array<any>>([]);
@@ -543,9 +546,7 @@ export const SettingsLogs = () => {
         selectedRowsData: any[],
         trigger: 'user' | 'internal'
     ) => {
-        console.log('row selection obj', selectedRows);
-        console.log('row selection data', selectedRowsData);
-        console.log('trigger', trigger);
+
         if (selectedRowsData?.length >= 1) {
             setSelectedLogs(selectedRowsData)
         }
@@ -555,11 +556,19 @@ export const SettingsLogs = () => {
     }
 
     const clearFilters = (e) => {
+        if (e == ""){
+            setSelectedFilterType('')
+            setAuditLogs(currentTimeFrameLogs);
+            setSelectedFilters(['No additional filter applied']);
+            setLogCount(currentTimeFrameLogs.length.toString());
+            setSelectedSchemas([]);
+            return;
+        }
         e.preventDefault();
         setSelectedFilterType('')
-        setAuditLogs(originalLogs);
+        setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters(['No additional filter applied']);
-        setLogCount(originalLogs.length.toString());
+        setLogCount(currentTimeFrameLogs.length.toString());
         setSelectedSchemas([]);
         return;
     }
@@ -568,10 +577,9 @@ export const SettingsLogs = () => {
         setLoading(true);
         const apiAuditLogs = await functions.call('get-audit-logs', { data: timeFrame }).then(response => response.json());
 
-        console.log(apiAuditLogs)
-
+        setCurrentTimeFrameLogs(apiAuditLogs.result.records);
         setAuditLogs(apiAuditLogs.result.records);
-        setOriginalLogs(apiAuditLogs.result.records);
+        setOldestLogs(apiAuditLogs.result.records);
         setLogCount(apiAuditLogs.result.records?.length);
         setLoading(false);
 
@@ -600,51 +608,62 @@ export const SettingsLogs = () => {
         getAuditLogs(timeFrame);
     }, [])
 
-
-    // const fetchAuditLogsQuery = `
-    // fetch logs, from: ${timeFrame?.from.value}, to:${timeFrame?.to.value}
-    //     | filter logtype == "AUDIT"
-    // `
-
-
-
-
-
-    // const { data, error, isLoading, refetch } = useDqlQuery({ body: { query: fetchAuditLogsQuery } }, { autoFetch: false, autoFetchOnUpdate: false });
-
-    // console.log(data, error, isLoading, refetch);
-
-    // const auditLogs = data?.records;
-
-
     useEffect(() => {
         if (timeFrame !== null) {
-            if (oldestQuery == '') {
-                setOldestQuery(timeFrame.from.absoluteDate)
+            if (oldestTimeFrame == '') {
+                setOldestTimeFrame(timeFrame.from.absoluteDate)
             }
-            const oldestDate = new Date(oldestQuery);
+            const oldestDate = new Date(oldestTimeFrame);
             const selectedDate = new Date(timeFrame.from.absoluteDate);
-            console.log("Oldest Date: " + oldestDate)
-            console.log("Selected Date: " + selectedDate)
+            setLastSelectedDate(timeFrame.from.absoluteDate);
 
             // number MS since 1970 so if a date is a greater number, its later in the year therefore most recent
             if (selectedDate > oldestDate) {
-                console.log("selectedDate > oldest date, selected Date is NEWER than oldest Date therefore we don't fetch data but instead filter")
-                const filteredLogsInsteadofFetchingNew = filteredData.filter(auditLog => {
-                    const logTimestamp = new Date(auditLog.timestamp);
-                    return logTimestamp > selectedDate;
-                })
-
-                console.log(filteredLogsInsteadofFetchingNew)
-                setAuditLogs(filteredLogsInsteadofFetchingNew);
-                setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                // number ms since 1970 so if a date is a greater number, its later in the year therefore most recent
+                // If selected Date is more recent than oldest date, but older than last selected date, filter from the original logs from oldest query
+                if (selectedDate < new Date(lastSelectedDate)) {
+                    const useThese = [...oldestLogs];
+                    const timestampLogsInsteadOfNew = useThese.filter(auditLog => {
+                        const logTimestamp = new Date(auditLog.timestamp);
+                        return logTimestamp > selectedDate;
+                    })
+                    
+                    clearFilters('')
+                    setCurrentTimeFrameLogs(timestampLogsInsteadOfNew);
+                    setAuditLogs(timestampLogsInsteadOfNew);
+                    setLogCount(timestampLogsInsteadOfNew.length.toString());
+                    return;
+                }
+                // SelectedDate > oldest date, selected is NEWER than oldest Date, therefore filter instead of query
+                if (selectedDate > new Date(lastSelectedDate) && filteredData.length > 0) {
+                    const filteredLogsInsteadofFetchingNew = filteredData.filter(auditLog => {
+                        const logTimestamp = new Date(auditLog.timestamp);
+                        return logTimestamp > selectedDate;
+                    })
+                    
+                    setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
+                    setAuditLogs(filteredLogsInsteadofFetchingNew);
+                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                }
+                else {
+                    const useThese = [...oldestLogs];
+                    const filteredLogsInsteadofFetchingNew = useThese.filter(auditLog => {
+                        const logTimestamp = new Date(auditLog.timestamp);
+                        return logTimestamp > selectedDate;
+                    })
+                    
+                    clearFilters('')
+                    setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
+                    setAuditLogs(filteredLogsInsteadofFetchingNew);
+                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                }
 
             }
 
             // number MS since 1970 so if a date is a less number, its earlier in the year therefore older time frame
             if (selectedDate < oldestDate) {
-                setOldestQuery(timeFrame.from.absoluteDate)
-                console.log('updated the oldest query time')
+                setOldestTimeFrame(timeFrame.from.absoluteDate)
+                console.log('updated the oldest query time');
                 getAuditLogs(timeFrame)
             }
 
@@ -656,12 +675,13 @@ export const SettingsLogs = () => {
 
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('Event Type')
@@ -669,33 +689,17 @@ export const SettingsLogs = () => {
 
     }
 
-    const handleCategoryClick = (e) => {
-        e.preventDefault();
-
-        if (e.target.innerText == "ALL") {
-            setSelectedFilterType('')
-            setAuditLogs(originalLogs);
-            setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
-            return;
-        }
-        const filteredLogs = originalLogs?.filter(log => log.category.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
-        setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
-        setSelectedFilterType('Category')
-        setLogCount(filteredLogs.length.toString());
-    }
-
     const handleScopeTypeClick = (e) => {
         e.preventDefault();
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log["details.dt.settings.scope_type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => log["details.dt.settings.scope_type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('Scope Type')
@@ -706,49 +710,32 @@ export const SettingsLogs = () => {
         e.preventDefault();
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log["user.organization"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => log["user.organization"] === e.target.innerText);
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('User Organization')
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleUserTypeClick = (e) => {
-        e.preventDefault();
-        if (e.target.innerText == "ALL") {
-            setSelectedFilterType('')
-            setAuditLogs(originalLogs);
-            setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
-            return;
-        }
-        const filteredLogs = originalLogs?.filter(log => log.userType.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
-        setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
-        setSelectedFilterType('User Type')
-        setLogCount(filteredLogs.length.toString());
-
-
-    }
-
     const handleSelectSchema = (e) => {
-        console.log(e)
         setSelectedSchemas(e);
 
         if (e.length == 0 || e.length == schemaIds.length) {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
+        const useThese = [...currentTimeFrameLogs];
 
-        const filteredLogs = originalLogs?.filter(log => e.includes(log["details.dt.settings.schema_id"]));
+        const filteredLogs = useThese?.filter(log => e.includes(log["details.dt.settings.schema_id"]));
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('Schema Id');
@@ -757,26 +744,10 @@ export const SettingsLogs = () => {
 
     }
 
-    // function onClickQuery() {
-    //     refetch();
-    // }
-    // const grailLogs = useDqlQuery(
-    //     {
-    //         body: {
-    //             query: fetchAuditLogsQuery
-    //         },
-    //     },
-    //     { autoFetch: false, autoFetchOnUpdate: false }
-    // );
-
-    // console.log(grailLogs)
-
     return (
         <Page style={{ height: 'unset', maxHeight: 'unset' }}>
             <Page.Sidebar resizable={true} preferredWidth={300}>
                 <Flex flexDirection='column'>
-                    {/* <EventTypeFilters handleEventTypeClick={handleEventTypeClick} /> */}
-                    {/* <CategoryFilters handleCategoryClick={handleCategoryClick} handleUserTypeClick={handleUserTypeClick} userTypes={userTypes} /> */}
                     <h3 style={{ margin: 5 }}>Event Type Filters</h3>
                     <Surface>
                         <Flex flexDirection='column'>
@@ -814,11 +785,11 @@ export const SettingsLogs = () => {
                     <h3 style={{ margin: 5 }}>User Organization Filters</h3>
                     <Surface>
                         <Flex flexDirection='column'>
-                            {userOrgs.sort().map((org, index) => {
+                            {userOrgs?.sort().map((org, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[org.toUpperCase()]}
-                                        <Button onClick={handleOrgTypeClick} key={index}>{org.toUpperCase()}</Button>
+                                        {iconMap[org?.toUpperCase()]}
+                                        <Button onClick={handleOrgTypeClick} key={index}>{org?.toUpperCase()}</Button>
                                     </Flex>
                                 )
                             })}
@@ -882,7 +853,7 @@ export const SettingsLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Event Type');
@@ -906,7 +877,7 @@ export const SettingsLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Category');
@@ -928,7 +899,7 @@ export const SettingsLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('User Type');
@@ -950,7 +921,7 @@ export const SettingsLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log["dt.settings.schema_id"] === cell.value);
+                                            const filteredLogs = oldestLogs?.filter(log => log["dt.settings.schema_id"] === cell.value);
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Schema Id');

@@ -275,17 +275,15 @@ export const GatewayLogs = () => {
         },
     });
     const [oldestQuery, setOldestQuery] = useState<string>('');
-    // const [filteredData, setFilteredData] = useState<Array<any>>([]);
-
-
-
+    const [lastSelectedDate, setLastSelectedDate] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [showSheet, setShowSheet] = useState<boolean>(false);
     const [auditLogs, setAuditLogs] = useState<Array<any>>([]);
     const [eventTypes, setEventTypes] = useState<Array<any>>([]);
     const [appIds, setAppIds] = useState<Array<any>>([]);
     const [userOrgs, setUserOrgs] = useState<Array<any>>([]);
-    const [originalLogs, setOriginalLogs] = useState<Array<any>>([]);
+    const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
+    const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
     const [logCount, setLogCount] = useState<String>('');
     const [selectedApps, setSelectedApps] = useState<Array<any>>([]);
@@ -427,9 +425,6 @@ export const GatewayLogs = () => {
         selectedRowsData: any[],
         trigger: 'user' | 'internal'
     ) => {
-        console.log('row selection obj', selectedRows);
-        console.log('row selection data', selectedRowsData);
-        console.log('trigger', trigger);
         if (selectedRowsData?.length >= 1) {
             setSelectedLogs(selectedRowsData)
         }
@@ -439,11 +434,19 @@ export const GatewayLogs = () => {
     }
 
     const clearFilters = (e) => {
+        if (e == ""){
+            setSelectedFilterType('')
+            setAuditLogs(currentTimeFrameLogs);
+            setSelectedFilters(['No additional filter applied']);
+            setLogCount(currentTimeFrameLogs.length.toString());
+            setSelectedApps([]);
+            return;
+        }
         e.preventDefault();
         setSelectedFilterType('')
-        setAuditLogs(originalLogs);
+        setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters(['No additional filter applied']);
-        setLogCount(originalLogs.length.toString());
+        setLogCount(currentTimeFrameLogs.length.toString());
         setSelectedApps([]);
         return;
     }
@@ -452,10 +455,9 @@ export const GatewayLogs = () => {
         setLoading(true);
         const apiAuditLogs = await functions.call('get-audit-logs-gateway', { data: timeFrame }).then(response => response.json());
 
-        console.log(apiAuditLogs)
-
+        setCurrentTimeFrameLogs(apiAuditLogs.result.records);
         setAuditLogs(apiAuditLogs.result.records);
-        setOriginalLogs(apiAuditLogs.result.records);
+        setOldestLogs(apiAuditLogs.result.records);
         setLogCount(apiAuditLogs.result.records?.length);
         setLoading(false);
 
@@ -480,23 +482,6 @@ export const GatewayLogs = () => {
         getAuditLogs(timeFrame);
     }, [])
 
-
-    // const fetchAuditLogsQuery = `
-    // fetch logs, from: ${timeFrame?.from.value}, to:${timeFrame?.to.value}
-    //     | filter logtype == "AUDIT"
-    // `
-
-
-
-
-
-    // const { data, error, isLoading, refetch } = useDqlQuery({ body: { query: fetchAuditLogsQuery } }, { autoFetch: false, autoFetchOnUpdate: false });
-
-    // console.log(data, error, isLoading, refetch);
-
-    // const auditLogs = data?.records;
-
-
     useEffect(() => {
         if (timeFrame !== null) {
             if (oldestQuery == '') {
@@ -504,20 +489,48 @@ export const GatewayLogs = () => {
             }
             const oldestDate = new Date(oldestQuery);
             const selectedDate = new Date(timeFrame.from.absoluteDate);
-            console.log("Oldest Date: " + oldestDate)
-            console.log("Selected Date: " + selectedDate)
+            setLastSelectedDate(timeFrame.from.absoluteDate);
 
             // number MS since 1970 so if a date is a greater number, its later in the year therefore most recent
             if (selectedDate > oldestDate) {
-                console.log("selectedDate > oldest date, selected Date is NEWER than oldest Date therefore we don't fetch data but instead filter")
-                const filteredLogsInsteadofFetchingNew = filteredData.filter(auditLog => {
-                    const logTimestamp = new Date(auditLog.timestamp);
-                    return logTimestamp > selectedDate;
-                })
-
-                console.log(filteredLogsInsteadofFetchingNew)
-                setAuditLogs(filteredLogsInsteadofFetchingNew);
-                setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                // number ms since 1970 so if a date is a greater number, its later in the year therefore most recent
+                // If selected Date is more recent than oldest date, but older than last selected date, filter from the original logs from oldest query
+                if (selectedDate < new Date(lastSelectedDate)) {
+                    const useThese = [...oldestLogs];
+                    const timestampLogsInsteadOfNew = useThese.filter(auditLog => {
+                        const logTimestamp = new Date(auditLog.timestamp);
+                        return logTimestamp > selectedDate;
+                    })
+                    
+                    clearFilters('')
+                    setCurrentTimeFrameLogs(timestampLogsInsteadOfNew);
+                    setAuditLogs(timestampLogsInsteadOfNew);
+                    setLogCount(timestampLogsInsteadOfNew.length.toString());
+                    return;
+                }
+                // SelectedDate > oldest date, selected is NEWER than oldest Date, therefore filter instead of query
+                if (selectedDate > new Date(lastSelectedDate) && filteredData.length > 0) {
+                    const filteredLogsInsteadofFetchingNew = filteredData.filter(auditLog => {
+                        const logTimestamp = new Date(auditLog.timestamp);
+                        return logTimestamp > selectedDate;
+                    })
+                    
+                    setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
+                    setAuditLogs(filteredLogsInsteadofFetchingNew);
+                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                }
+                else {
+                    const useThese = [...oldestLogs];
+                    const filteredLogsInsteadofFetchingNew = useThese.filter(auditLog => {
+                        const logTimestamp = new Date(auditLog.timestamp);
+                        return logTimestamp > selectedDate;
+                    })
+                    
+                    clearFilters('')
+                    setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
+                    setAuditLogs(filteredLogsInsteadofFetchingNew);
+                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                }
 
             }
 
@@ -536,12 +549,13 @@ export const GatewayLogs = () => {
 
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('Event Type')
@@ -553,12 +567,13 @@ export const GatewayLogs = () => {
         e.preventDefault();
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log["app.id"] === e.target.innerText.replace(/\s+/g, '_'));
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => log["app.id"] === e.target.innerText.replace(/\s+/g, '_'));
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('App Id')
@@ -569,12 +584,13 @@ export const GatewayLogs = () => {
         e.preventDefault();
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log["user.organization"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => log["user.organization"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('User Organization')
@@ -587,13 +603,14 @@ export const GatewayLogs = () => {
 
         if (e.length == 0 || e.length == selectedApps.length) {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
 
-        const filteredLogs = originalLogs?.filter(log => e.includes(log["app.id"]));
+        const useThese = [...currentTimeFrameLogs];
+        const filteredLogs = useThese?.filter(log => e.includes(log["app.id"]));
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('App Id');
@@ -710,7 +727,7 @@ export const GatewayLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Event Type');
@@ -734,7 +751,7 @@ export const GatewayLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Category');
@@ -756,7 +773,7 @@ export const GatewayLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('User Type');
@@ -778,7 +795,7 @@ export const GatewayLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log["app.id"] === cell.value);
+                                            const filteredLogs = oldestLogs?.filter(log => log["app.id"] === cell.value);
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('App Id');

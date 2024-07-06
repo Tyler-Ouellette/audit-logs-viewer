@@ -211,7 +211,7 @@ export const OldAuditLogs = () => {
     const [userTypes, setUserTypes] = useState<Array<any>>([]);
     const [schemaIds, setschemaIds] = useState<Array<any>>([]);
     const [selectedSchemas, setSelectedSchemas] = useState<Array<any>>([]);
-    const [originalLogs, setOriginalLogs] = useState<Array<any>>([]);
+    const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
     const [logCount, setLogCount] = useState<String>('');
     const [loading, setLoading] = useState(true);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
@@ -332,9 +332,9 @@ export const OldAuditLogs = () => {
     const clearFilters = (e) => {
         e.preventDefault();
         setSelectedFilterType('')
-        setAuditLogs(originalLogs);
+        setAuditLogs(oldestLogs);
         setSelectedFilters(['No additional filter applied']);
-        setLogCount(originalLogs.length.toString());
+        setLogCount(oldestLogs.length.toString());
         setSelectedSchemas([]);
         return;
     }
@@ -344,12 +344,12 @@ export const OldAuditLogs = () => {
 
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(oldestLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(oldestLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log.eventType.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('Event Type')
@@ -362,12 +362,12 @@ export const OldAuditLogs = () => {
 
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(oldestLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(oldestLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log.category.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('Category')
@@ -380,12 +380,12 @@ export const OldAuditLogs = () => {
 
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(oldestLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(oldestLogs.length.toString());
             return;
         }
-        const filteredLogs = originalLogs?.filter(log => log.userType.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('User Type')
@@ -399,13 +399,13 @@ export const OldAuditLogs = () => {
 
         if (e.length == 0 || e.length == schemaIds.length) {
             setSelectedFilterType('')
-            setAuditLogs(originalLogs);
+            setAuditLogs(oldestLogs);
             setSelectedFilters(['No additional filter applied']);
-            setLogCount(originalLogs.length.toString());
+            setLogCount(oldestLogs.length.toString());
             return;
         }
 
-        const filteredLogs = originalLogs?.filter(log => e.includes(log["dt.settings.schema_id"]));
+        const filteredLogs = oldestLogs?.filter(log => e.includes(log["dt.settings.schema_id"]));
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('Schema Id');
@@ -421,7 +421,7 @@ export const OldAuditLogs = () => {
         console.log(apiAuditLogs)
 
         setAuditLogs(apiAuditLogs.auditLogs);
-        setOriginalLogs(apiAuditLogs.auditLogs);
+        setOldestLogs(apiAuditLogs.auditLogs);
         setLogCount(apiAuditLogs.totalCount);
         setLoading(false);
 
@@ -492,7 +492,7 @@ export const OldAuditLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Event Type');
@@ -516,7 +516,7 @@ export const OldAuditLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Category');
@@ -538,7 +538,7 @@ export const OldAuditLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('User Type');
@@ -560,7 +560,7 @@ export const OldAuditLogs = () => {
                                     <TableUserActions.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = originalLogs?.filter(log => log["dt.settings.schema_id"] === cell.value);
+                                            const filteredLogs = oldestLogs?.filter(log => log["dt.settings.schema_id"] === cell.value);
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cell.value]);
                                             setSelectedFilterType('Schema Id');
