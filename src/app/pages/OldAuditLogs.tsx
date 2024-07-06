@@ -4,10 +4,14 @@ import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
 import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, TableVariantConfig, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
 import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
-import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem } from '@dynatrace/strato-components-preview';
-import { AccountIcon, BlockIcon, BugReportIcon, CodeIcon, ConnectorIcon, ContainerIcon, DeleteIcon, DesktopIcon, EditIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, GroupIcon, HashtagIcon, LockIcon, LoginIcon, LogoutIcon, ManualIcon, OneAgentSignetIcon, PlusIcon, ResetIcon } from '@dynatrace/strato-icons';
+import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, TextInput, ToggleButtonGroup, ToggleButtonGroupItem } from '@dynatrace/strato-components-preview';
+import { FilterIcon, FilterOutIcon, FolderOpenIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
+import { CategoryFilters } from '../components/CategoryFilters';
+import { EventTypeFilters } from '../components/EventTypeFilters';
+import { UserTypeFilters } from '../components/UserTypeFilters';
+
 
 const auditColumns: TableColumn[] = [
     {
@@ -200,25 +204,49 @@ const auditColumns: TableColumn[] = [
     }
 ];
 
-export const AuditLogs = () => {
+export const OldAuditLogs = () => {
 
-    const [auditLogs, setAuditLogs] = useState<Array<any>>([])
-    const [userTypes, setUserTypes] = useState<Array<any>>([])
-    const [schemaIds, setschemaIds] = useState<Array<any>>([])
-    const [selectedSchemas, setSelectedSchemas] = useState<Array<any>>([])
-    const [originalLogs, setOriginalLogs] = useState<Array<any>>([])
-    const [logCount, setLogCount] = useState<String>('')
+    const [showSheet, setShowSheet] = useState<boolean>(false);
+    const [auditLogs, setAuditLogs] = useState<Array<any>>([]);
+    const [userTypes, setUserTypes] = useState<Array<any>>([]);
+    const [schemaIds, setschemaIds] = useState<Array<any>>([]);
+    const [selectedSchemas, setSelectedSchemas] = useState<Array<any>>([]);
+    const [originalLogs, setOriginalLogs] = useState<Array<any>>([]);
+    const [logCount, setLogCount] = useState<String>('');
     const [loading, setLoading] = useState(true);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
     const [selectedFilters, setSelectedFilters] = useState<Array<any>>([]);
     const [selectedFilterType, setSelectedFilterType] = useState<String>('');
-    const [showSheet, setShowSheet] = useState<boolean>(false);
 
     const columns = useMemo<TableColumn[]>(() => auditColumns, []);
     const auditData = useMemo(() => auditLogs, [auditLogs]);
 
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
+
+    var icon;
+    const iconMap = {
+        "ACTIVE_GATE": `<ContainerIcon />`,
+        "AGENT": `<OneAgentSignetIcon />`,
+        "CONFIG": `<CodeIcon />`,
+        "DEBUG_UI": `<BugReportIcon />`,
+        "MANUAL_TAGGING_SERVICE": `<ManualIcon />`,
+        "TOKEN": `<CodeIcon />`,
+        "WEB_UI": `<DesktopIcon />`
+    }
+
+    const colorsMap = {
+        "CREATE": Colors.Background.Container.Success.Accent,
+        "DELETE": Colors.Background.Container.Critical.Accent,
+        "LOGIN": Colors.Background.Container.Success.Emphasized,
+        "LOGOUT": Colors.Background.Container.Neutral.Accent,
+        "REMOTE_CONFIGURATION_MANAGEMENT": Colors.Background.Container.Success.Default,
+        "REVOKE": Colors.Background.Container.Neutral.Accent,
+        "TAG_ADD": Colors.Background.Container.Success.Accent,
+        "TAG_REMOVE": Colors.Background.Container.Critical.Accent,
+        "TAG_UPDATE": Colors.Background.Container.Warning.Accent,
+        "UPDATE": Colors.Background.Container.Warning.Accent,
+    }
 
     // const [columnOrder, setColumnOrder] = useState([
     //     'timestamp',
@@ -349,6 +377,7 @@ export const AuditLogs = () => {
     const handleUserTypeClick = (e) => {
         e.preventDefault();
 
+
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(originalLogs);
@@ -361,6 +390,7 @@ export const AuditLogs = () => {
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('User Type')
         setLogCount(filteredLogs.length.toString());
+
     }
 
     const handleSelectSchema = (e) => {
@@ -386,7 +416,7 @@ export const AuditLogs = () => {
 
     const getAuditLogs = async () => {
         setLoading(true);
-        const apiAuditLogs = await functions.call('get-audit-logs').then(response => response.json());
+        const apiAuditLogs = await functions.call('get-old-audit-logs').then(response => response.json());
 
         console.log(apiAuditLogs)
 
@@ -410,138 +440,27 @@ export const AuditLogs = () => {
         getAuditLogs();
     }, [])
 
+
     return (
         <Page style={{ height: 'unset', maxHeight: 'unset' }}>
             <Page.Sidebar resizable={true} preferredWidth={300}>
                 <Flex flexDirection='column'>
-                    <h3 style={{ margin: 5 }}>Event Type Filters</h3>
-                    <Surface padding={16}>
-                        <Flex flexDirection='column' gap={2}>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <ResetIcon />
-                                <Button onClick={handleEventTypeClick}>ALL</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <PlusIcon />
-                                <Button onClick={handleEventTypeClick}>CREATE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <DeleteIcon />
-                                <Button onClick={handleEventTypeClick}>DELETE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <LoginIcon />
-                                <Button onClick={handleEventTypeClick}>LOGIN</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <LogoutIcon />
-                                <Button onClick={handleEventTypeClick}>LOGOUT</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <ConnectorIcon />
-                                <Button onClick={handleEventTypeClick}>REMOTE_CONFIGURATION_MANAGEMENT</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <BlockIcon />
-                                <Button onClick={handleEventTypeClick}>REVOKE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <PlusIcon />
-                                <Button onClick={handleEventTypeClick}>TAG_ADD</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <DeleteIcon />
-                                <Button onClick={handleEventTypeClick}>TAG_REMOVE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <EditIcon />
-                                <Button onClick={handleEventTypeClick}>TAG_UPDATE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <EditIcon />
-                                <Button onClick={handleEventTypeClick}>UPDATE</Button>
-                            </Flex>
-                        </Flex>
-                    </Surface>
-                    <h3 style={{ margin: 5 }}>Category Filters</h3>
-                    <Surface padding={16}>
-                        <Flex flexDirection='column' gap={2}>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <ResetIcon />
-                                <Button onClick={handleCategoryClick}>ALL</Button>
-                            </Flex>
-
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <ContainerIcon />
-                                <Button onClick={handleCategoryClick}>ACTIVE_GATE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <OneAgentSignetIcon />
-                                <Button onClick={handleCategoryClick}>AGENT</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <CodeIcon />
-                                <Button onClick={handleCategoryClick}>CONFIG</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <BugReportIcon />
-                                <Button onClick={handleCategoryClick}>DEBUG_UI</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <ManualIcon />
-                                <Button onClick={handleCategoryClick}>MANUAL_TAGGING_SERVICE</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <LockIcon />
-                                <Button onClick={handleCategoryClick}>TOKEN</Button>
-                            </Flex>
-                            <Flex justifyContent='flex-start' alignItems='center'>
-                                <DesktopIcon />
-                                <Button onClick={handleCategoryClick}>WEB_UI</Button>
-                            </Flex>
-                        </Flex>
-                    </Surface>
-                    <h3 style={{ margin: 5 }}>User Type Filters</h3>
-                    <Surface padding={16}>
-                        <Flex flexDirection='column' gap={2}>
-                            <Flex key={'allUserType'} justifyContent='flex-start' alignItems='center'>
-                                <ResetIcon />
-                                <Button key={'allUserType'} onClick={handleUserTypeClick}>ALL</Button>
-                            </Flex>
-                            {userTypes.map((type, index) => {
-                                let icon;
-                                if (type == "USER_NAME") {
-                                    icon = <AccountIcon />
-                                }
-                                if (type == "TOKEN_HASH") {
-                                    icon = <HashtagIcon />
-                                }
-                                if (type == "PUBLIC_TOKEN_IDENTIFIER") {
-                                    icon = <LockIcon />
-                                }
-                                else {
-                                    icon = <GroupIcon />
-                                }
-                                return (
-                                    <Flex key={index} justifyContent='flex-start' alignItems='center'>
-                                        {icon}
-                                        <Button key={index} onClick={handleUserTypeClick}>{type}</Button>
-                                    </Flex>
-                                )
-                            })}
-                        </Flex>
-                    </Surface>
+                    <EventTypeFilters handleEventTypeClick={handleEventTypeClick} />
+                    <CategoryFilters handleCategoryClick={handleCategoryClick} handleUserTypeClick={handleUserTypeClick} userTypes={userTypes} />
+                    <UserTypeFilters handleUserTypeClick={handleUserTypeClick} userTypes={userTypes} />
                 </Flex>
             </Page.Sidebar>
             <Page.Main style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
-                <TitleBar>
-                    <TitleBar.Prefix>
-                        <Page.PanelControlButton target="sidebar" />
-                    </TitleBar.Prefix>
-                    <TitleBar.Title>View your Audit Logs</TitleBar.Title>
-                    <TitleBar.Subtitle>Audit Log Count: {logCount} <br /> Selected Filter {selectedFilterType.length == 0 ? '' : '- ' + selectedFilterType} - {selectedFilters?.length == 0 ? 'No additional filter applied' : selectedFilters?.length == 1 ? selectedFilters : selectedFilters.join(' ')}</TitleBar.Subtitle>
-                </TitleBar>
-                <DataTable
+                <Flex justifyContent='space-between'>
+                    <TitleBar>
+                        <TitleBar.Prefix>
+                            <Page.PanelControlButton target="sidebar" />
+                        </TitleBar.Prefix>
+                        <TitleBar.Title>View your Audit Logs</TitleBar.Title>
+                        <TitleBar.Subtitle>Audit Log Count: {logCount} <br /> Selected Filter {selectedFilterType.length == 0 ? '' : '- ' + selectedFilterType} - {selectedFilters?.length == 0 ? 'No additional filter applied' : selectedFilters?.length == 1 ? selectedFilters : selectedFilters.join(' ')}</TitleBar.Subtitle>
+                    </TitleBar>
+                </Flex>
+                {<DataTable
                     loading={loading}
                     data={filteredData || []}
                     columns={columns}
@@ -742,9 +661,9 @@ export const AuditLogs = () => {
                     </DataTable.Toolbar>
                     <DataTable.Pagination defaultPageSize={20} />
 
-                </DataTable>
+                </DataTable>}
             </Page.Main>
-            <Sheet
+            {<Sheet
                 title="Individual Audit Logs"
                 show={showSheet}
                 onDismiss={() => setShowSheet(false)}
@@ -821,13 +740,18 @@ export const AuditLogs = () => {
                         <DataTable.Pagination defaultPageSize={20} />
 
                     </DataTable>
-                    <Grid gridTemplateColumns='1fr 1fr 1fr 1fr' width='100%'>
+                    {/* <Grid gridTemplateColumns='1fr 1fr 1fr 1fr' width='100%'>
                         {selectedLogs.map((log, index) => <Grid key={index} gridItem><IndividualLog key={index} log={log} /></Grid>)}
-                    </Grid>
+                    </Grid> */}
+                    <Flex flexDirection='column'>
+                        <Grid gridTemplateColumns='1fr' width='100%'>
+                            {selectedLogs.map((log, index) => <Grid key={index} gridItem><IndividualLog key={index} log={log} /></Grid>)}
+                        </Grid>
+                    </Flex>
                 </Flex>
 
 
-            </Sheet>
+            </Sheet>}
         </Page>
     );
 }
