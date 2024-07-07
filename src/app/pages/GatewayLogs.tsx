@@ -709,7 +709,7 @@ export const GatewayLogs = () => {
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
                         <TitleBar.Title>View Audit Logs - API Gateway</TitleBar.Title>
-                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' && <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div>}
+                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
                             Selected Filter:
                             <Grid gridTemplateColumns={'repeat(3, 250px)'}>
                                 {selectedFilters?.map((filter, index) => {
