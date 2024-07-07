@@ -5,7 +5,7 @@ import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
 import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, TableVariantConfig, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
 import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
-import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem, Paragraph } from '@dynatrace/strato-components-preview';
+import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem, Paragraph, Chip } from '@dynatrace/strato-components-preview';
 import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, GroupIcon, HashtagIcon, LockIcon, LoginIcon, LogoutIcon, ManualIcon, OneAgentSignetIcon, PlusIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, UfoIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
@@ -434,18 +434,50 @@ export const GatewayLogs = () => {
     }
 
     const clearFilters = (e) => {
-        if (e == ""){
+        if (e == "") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(currentTimeFrameLogs.length.toString());
             setSelectedApps([]);
+            return;
+        }
+        if (e === "shift") {
+            const useThis = [...selectedFilters];
+            useThis.shift();
+            if (useThis.length == 0){
+                setSelectedFilterType('')
+                setAuditLogs(currentTimeFrameLogs);
+                setSelectedFilters([]);
+                setLogCount(currentTimeFrameLogs.length.toString());
+                setSelectedApps([]);
+                return;
+            }
+            
+            const useThese = [...currentTimeFrameLogs];
+            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
+            setSelectedFilters(useThis);
+            setSelectedApps(useThis);
+            setAuditLogs(filteredLogs)
+            setLogCount(filteredLogs.length.toString());
+            return;
+        }
+        if (typeof (e) == 'number') {
+            const useThis = [...selectedFilters];
+            useThis.splice(e, 1);
+
+            const useThese = [...currentTimeFrameLogs];
+            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
+            setSelectedFilters(useThis);
+            setSelectedApps(useThis);
+            setAuditLogs(filteredLogs)
+            setLogCount(filteredLogs.length.toString());
             return;
         }
         e.preventDefault();
         setSelectedFilterType('')
         setAuditLogs(currentTimeFrameLogs);
-        setSelectedFilters(['No additional filter applied']);
+        setSelectedFilters([]);
         setLogCount(currentTimeFrameLogs.length.toString());
         setSelectedApps([]);
         return;
@@ -501,7 +533,7 @@ export const GatewayLogs = () => {
                         const logTimestamp = new Date(auditLog.timestamp);
                         return logTimestamp > selectedDate;
                     })
-                    
+
                     clearFilters('')
                     setCurrentTimeFrameLogs(timestampLogsInsteadOfNew);
                     setAuditLogs(timestampLogsInsteadOfNew);
@@ -514,7 +546,7 @@ export const GatewayLogs = () => {
                         const logTimestamp = new Date(auditLog.timestamp);
                         return logTimestamp > selectedDate;
                     })
-                    
+
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
                     setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
@@ -525,7 +557,7 @@ export const GatewayLogs = () => {
                         const logTimestamp = new Date(auditLog.timestamp);
                         return logTimestamp > selectedDate;
                     })
-                    
+
                     clearFilters('')
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
@@ -550,7 +582,7 @@ export const GatewayLogs = () => {
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
@@ -568,7 +600,7 @@ export const GatewayLogs = () => {
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
@@ -585,7 +617,7 @@ export const GatewayLogs = () => {
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
@@ -598,13 +630,12 @@ export const GatewayLogs = () => {
     }
 
     const handleSelectApp = (e) => {
-        console.log(e)
         setSelectedApps(e);
 
-        if (e.length == 0 || e.length == selectedApps.length) {
+        if (e.length == 0) {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(currentTimeFrameLogs.length.toString());
             return;
         }
@@ -616,7 +647,6 @@ export const GatewayLogs = () => {
         setSelectedFilterType('App Id');
         setLogCount(filteredLogs.length.toString());
         setSelectedApps(e);
-
     }
 
     return (
@@ -679,10 +709,31 @@ export const GatewayLogs = () => {
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
                         <TitleBar.Title>View your Audit Logs</TitleBar.Title>
-                        <TitleBar.Subtitle>Audit Log Count: {logCount} <br /> Selected Filter {selectedFilterType.length == 0 ? '' : '- ' + selectedFilterType} - {selectedFilters?.length == 0 ? 'No additional filter applied' : selectedFilters?.length == 1 ? selectedFilters : selectedFilters.join(' ')}</TitleBar.Subtitle>
+                        <TitleBar.Subtitle>Audit Log Count: {logCount}
+                            <br />
+                            Selected Filter:
+                            <Grid gridTemplateColumns={'repeat(3, 250px)'}>
+                                {selectedFilters?.map((filter, index) => {
+                                    return (
+                                        <Chip key={index}>
+                                            {filter}
+                                            <Chip.DeleteButton key={index}
+                                                aria-label="Remove Filter"
+                                                onClick={() => {
+                                                    const index = selectedFilters.indexOf(filter);
+                                                    const val = index === 0 ? 'shift' : index
+                                                    clearFilters(val);
+                                                }}
+                                            />
+                                        </Chip>
+                                    )
+                                })}
+                            </Grid>
+                            {selectedFilters?.length == 0 && <Chip>No filter applied</Chip>}
+                        </TitleBar.Subtitle>
 
                         <TitleBar.Suffix style={{ minWidth: '250px' }}>
-                            <Flex flexDirection='column' style={{ minWidth: 'fit-content' }} justifyContent='flex-end' alignItems='flex-end' >
+                            <Flex style={{ minWidth: 'fit-content' }} justifyContent='flex-end' alignItems='flex-end' >
 
                                 <TimeframeSelector style={{ minWidth: 'fit-content' }} value={timeFrame} onChange={setTimeFrame} >
                                     <TimeframeSelector.Presets>

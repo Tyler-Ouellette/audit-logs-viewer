@@ -318,9 +318,6 @@ export const OldAuditLogs = () => {
         selectedRowsData: any[],
         trigger: 'user' | 'internal'
     ) => {
-        console.log('row selection obj', selectedRows);
-        console.log('row selection data', selectedRowsData);
-        console.log('trigger', trigger);
         if (selectedRowsData?.length >= 1) {
             setSelectedLogs(selectedRowsData)
         }
@@ -333,7 +330,7 @@ export const OldAuditLogs = () => {
         e.preventDefault();
         setSelectedFilterType('')
         setAuditLogs(oldestLogs);
-        setSelectedFilters(['No additional filter applied']);
+        setSelectedFilters([]);
         setLogCount(oldestLogs.length.toString());
         setSelectedSchemas([]);
         return;
@@ -345,7 +342,7 @@ export const OldAuditLogs = () => {
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(oldestLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(oldestLogs.length.toString());
             return;
         }
@@ -363,7 +360,7 @@ export const OldAuditLogs = () => {
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(oldestLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(oldestLogs.length.toString());
             return;
         }
@@ -381,7 +378,7 @@ export const OldAuditLogs = () => {
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(oldestLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(oldestLogs.length.toString());
             return;
         }
@@ -394,13 +391,12 @@ export const OldAuditLogs = () => {
     }
 
     const handleSelectSchema = (e) => {
-        console.log(e)
         setSelectedSchemas(e);
 
         if (e.length == 0 || e.length == schemaIds.length) {
             setSelectedFilterType('')
             setAuditLogs(oldestLogs);
-            setSelectedFilters(['No additional filter applied']);
+            setSelectedFilters([]);
             setLogCount(oldestLogs.length.toString());
             return;
         }
@@ -417,8 +413,6 @@ export const OldAuditLogs = () => {
     const getAuditLogs = async () => {
         setLoading(true);
         const apiAuditLogs = await functions.call('get-old-audit-logs').then(response => response.json());
-
-        console.log(apiAuditLogs)
 
         setAuditLogs(apiAuditLogs.auditLogs);
         setOldestLogs(apiAuditLogs.auditLogs);
