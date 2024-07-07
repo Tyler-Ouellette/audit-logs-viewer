@@ -2,10 +2,27 @@
   "environmentUrl": "ENTER YOUR TENANT URL HERE https://abc123.apps.dynatrace.com",
   "app": {
     "name": "Audit Logs Viewer",
-    "version": "0.0.0",
-    "description": "A starting project with routing, fetching data, and charting",
+    "version": "0.0.2",
+    "description": "An application to view and quickly filter audit logs.",
     "id": "my.audit.logs.viewer",
-    "scopes": [{ "name": "storage:logs:read", "comment": "default template" }, { "name": "storage:buckets:read", "comment": "default template" }, { "name": "environment-api:audit-logs:read", "comment": "Read Audit Logs"}]
+    "scopes": [
+      {
+        "name": "storage:logs:read",
+        "comment": "default template"
+      },
+      {
+        "name": "storage:buckets:read",
+        "comment": "default template"
+      },
+      {
+        "name": "storage:system:read",
+        "comment": "Read System Tables for Audit Logs"
+      },
+      {
+        "name": "environment-api:audit-logs:read",
+        "comment": "Read old Audit Logs from API"
+      }
+    ]
   },
   "icon": "./src/assets/auditLogsIcon.png"
 }

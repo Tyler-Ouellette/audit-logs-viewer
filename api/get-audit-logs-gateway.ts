@@ -1,3 +1,4 @@
+import { auditLogsClient } from '@dynatrace-sdk/client-classic-environment-v2';
 import { queryExecutionClient } from '@dynatrace-sdk/client-query';
 import type { TimeframeV2 } from '@dynatrace/strato-components-preview/core';
 
@@ -29,7 +30,8 @@ export default async function (payload: TimeframeV2) {
   const fetchAuditLogsQuery = `
   fetch dt.system.events, from: ${timeFrame.from.value}, to:${timeFrame.to.value}
       | filter event.kind == "AUDIT_EVENT"
-      | filter event.provider == "SETTINGS"
+      | filter event.provider == "API_GATEWAY"
+      | limit 10000
   `
 
   const response = await queryExecutionClient.queryExecute({
