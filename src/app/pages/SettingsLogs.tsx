@@ -834,7 +834,7 @@ export const SettingsLogs = () => {
                         <TitleBar.Prefix>
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
-                        <TitleBar.Title>View your Audit Logs</TitleBar.Title>
+                        <TitleBar.Title>View Audit Logs - Settings Changes</TitleBar.Title>
                         <TitleBar.Subtitle>Audit Log Count: {logCount}
                             <br />
                             Selected Filter:

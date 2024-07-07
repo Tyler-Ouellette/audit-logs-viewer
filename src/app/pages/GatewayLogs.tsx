@@ -708,7 +708,7 @@ export const GatewayLogs = () => {
                         <TitleBar.Prefix>
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
-                        <TitleBar.Title>View your Audit Logs</TitleBar.Title>
+                        <TitleBar.Title>View Audit Logs - API Gateway</TitleBar.Title>
                         <TitleBar.Subtitle>Audit Log Count: {logCount}
                             <br />
                             Selected Filter:
