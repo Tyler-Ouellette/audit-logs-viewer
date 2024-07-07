@@ -6,7 +6,7 @@ import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, T
 import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
 import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem, Paragraph, Chip } from '@dynatrace/strato-components-preview';
-import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, GroupIcon, HashtagIcon, LockIcon, LoginIcon, LogoutIcon, ManualIcon, OneAgentSignetIcon, PlusIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, UfoIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon } from '@dynatrace/strato-icons';
+import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, GroupIcon, HashtagIcon, LockIcon, LoginIcon, LogoutIcon, ManualIcon, OneAgentSignetIcon, PlusIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, UfoIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
 import { TimeframeSelector } from '@dynatrace/strato-components-preview/forms';
@@ -445,7 +445,7 @@ export const GatewayLogs = () => {
         if (e === "shift") {
             const useThis = [...selectedFilters];
             useThis.shift();
-            if (useThis.length == 0){
+            if (useThis.length == 0) {
                 setSelectedFilterType('')
                 setAuditLogs(currentTimeFrameLogs);
                 setSelectedFilters([]);
@@ -453,7 +453,7 @@ export const GatewayLogs = () => {
                 setSelectedApps([]);
                 return;
             }
-            
+
             const useThese = [...currentTimeFrameLogs];
             const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
             setSelectedFilters(useThis);
@@ -709,8 +709,7 @@ export const GatewayLogs = () => {
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
                         <TitleBar.Title>View Audit Logs - API Gateway</TitleBar.Title>
-                        <TitleBar.Subtitle>Audit Log Count: {logCount}
-                            <br />
+                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' && <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div>}
                             Selected Filter:
                             <Grid gridTemplateColumns={'repeat(3, 250px)'}>
                                 {selectedFilters?.map((filter, index) => {
