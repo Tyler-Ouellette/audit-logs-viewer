@@ -1,6 +1,37 @@
 # DISCLAIMER
 This project was created by myself, an SE of Dynatrace. This is not an official Dynatrace application and it is not something you can open a support ticket on. You may create an issue on the github repository, however there is no guaruntee it will be addressed (this isn't my primary job, just a fun project). 
 
+# Pre-Requisites
+
+Users looking to access the application will need the following scopes to be able to access all the pages of the application:
+```
+  storage:logs:read
+  storage:buckets:read
+  storage:system:read
+  environment-api:audit-logs:read
+```
+
+```
+    "scopes": [
+      {
+        "name": "storage:logs:read",
+        "comment": "Access Logs"
+      },
+      {
+        "name": "storage:buckets:read",
+        "comment": "Access Buckets"
+      },
+      {
+        "name": "storage:system:read",
+        "comment": "Read System Tables for Audit Logs"
+      },
+      {
+        "name": "environment-api:audit-logs:read",
+        "comment": "Read old Audit Logs from API"
+      }
+    ]
+```
+
 # Getting Started with your Dynatrace App
 
 Git clone the repository.
