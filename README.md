@@ -1,15 +1,16 @@
+# DISCLAIMER
+This project was created by myself, an SE of Dynatrace. This is not an official Dynatrace application and it is not something you can open a support ticket on. You may create an issue on the github repository, however there is no guaruntee it will be addressed (this isn't my primary job, just a fun project). 
+
 # Getting Started with your Dynatrace App
 
-This project was bootstrapped with Dynatrace App Toolkit.
-
-It uses React in combination with TypeScript, to provide great developer experience.
-
-# To get started:
-
 Git clone the repository.
+
+## Update the configuration file
 Go to the file app.config.json and update the environmentURL to your environment.
+
 ## Install the dependencies
 ```npm install```
+
 ## Start the app in development mode
 ```npm run start```
 ## Make Changes
