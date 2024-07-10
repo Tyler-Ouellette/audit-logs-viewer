@@ -8,11 +8,11 @@
     "scopes": [
       {
         "name": "storage:logs:read",
-        "comment": "default template"
+        "comment": "Access Logs"
       },
       {
         "name": "storage:buckets:read",
-        "comment": "default template"
+        "comment": "Access Buckets"
       },
       {
         "name": "storage:system:read",
