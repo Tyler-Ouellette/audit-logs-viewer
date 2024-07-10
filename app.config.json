@@ -2,7 +2,7 @@
   "environmentUrl": "ENTER YOUR TENANT URL HERE https://abc123.apps.dynatrace.com",
   "app": {
     "name": "Audit Logs Viewer",
-    "version": "0.0.2",
+    "version": "0.0.4",
     "description": "An application to view and quickly filter audit logs.",
     "id": "my.audit.logs.viewer",
     "scopes": [
