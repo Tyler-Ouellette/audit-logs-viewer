@@ -1,7 +1,7 @@
 # DISCLAIMER
 This project was created by myself, an SE of Dynatrace. This is not an official Dynatrace application and it is not something you can open a support ticket on. You may create an issue on the github repository, however there is no guaruntee it will be addressed (this isn't my primary job, just a fun project). 
 
-# Pre-Requisites
+# Prerequisite
 
 Users looking to access the application will need the following scopes to be able to access all the pages of the application:
 ```
