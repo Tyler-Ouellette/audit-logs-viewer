@@ -32,6 +32,7 @@ export default async function (payload: TimeframeV2) {
       | filter event.kind == "AUDIT_EVENT"
       | filter event.provider == "API_GATEWAY"
       | limit 10000
+      | sort timestamp desc
   `
 
   const response = await queryExecutionClient.queryExecute({

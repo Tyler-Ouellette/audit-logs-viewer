@@ -30,6 +30,7 @@ export default async function (payload: TimeframeV2) {
   fetch dt.system.events, from: ${timeFrame.from.value}, to:${timeFrame.to.value}
       | filter event.kind == "AUDIT_EVENT"
       | filter event.provider == "SETTINGS"
+      | sort timestamp desc
   `
 
   const response = await queryExecutionClient.queryExecute({
