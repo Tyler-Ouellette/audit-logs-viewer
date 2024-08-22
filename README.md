@@ -9,6 +9,7 @@ Users looking to access the application will need the following scopes to be abl
   storage:buckets:read
   storage:system:read
   environment-api:audit-logs:read
+  environment:roles:manage-settings
 ```
 
 ```
@@ -28,6 +29,10 @@ Users looking to access the application will need the following scopes to be abl
       {
         "name": "environment-api:audit-logs:read",
         "comment": "Read old Audit Logs from API"
+      },
+      {
+        "name": "environment:roles:manage-settings",
+        "comment": "Manage Settings are required to view old audit logs"
       }
     ]
 ```
