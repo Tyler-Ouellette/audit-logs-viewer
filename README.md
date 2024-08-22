@@ -48,6 +48,39 @@ Git clone the repository.
 ## Update the configuration file
 Go to the file app.config.json and update the environmentURL to your environment.
 
+```
+{
+  "environmentUrl": "ENTER YOUR TENANT URL HERE https://abc123.apps.dynatrace.com",
+  "app": {
+    "name": "Audit Logs Viewer",
+    "version": "0.0.4",
+    "description": "An application to view and quickly filter audit logs.",
+    "id": "my.audit.logs.viewer",
+    "scopes": [
+      {
+        "name": "storage:logs:read",
+        "comment": "Access Logs"
+      },
+      {
+        "name": "storage:buckets:read",
+        "comment": "Access Buckets"
+      },
+      {
+        "name": "storage:system:read",
+        "comment": "Read System Tables for Audit Logs"
+      },
+      {
+        "name": "environment-api:audit-logs:read",
+        "comment": "Read old Audit Logs from API"
+      }
+    ]
+  },
+  "icon": "./src/assets/auditLogsIcon.png"
+}
+
+
+```
+
 ## Install the dependencies
 ```npm install```
 
