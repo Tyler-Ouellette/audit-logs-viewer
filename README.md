@@ -10,6 +10,10 @@ Users looking to access the application will need the following scopes to be abl
   storage:system:read
   environment-api:audit-logs:read
   environment:roles:manage-settings
+
+  The user must also have:
+  app-engine:apps:run
+  app-engine:functions:run
 ```
 
 ```
