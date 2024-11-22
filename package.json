@@ -1,6 +1,6 @@
 {
   "name": "audit-logs-viewer",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Review the audit logs of this environment.",
   "scripts": {
     "build": "dt-app build --prod",

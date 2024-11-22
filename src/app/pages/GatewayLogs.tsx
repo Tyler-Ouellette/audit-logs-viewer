@@ -65,7 +65,7 @@ const auditColumns: TableColumn[] = [
                 autoWidth: true,
                 alignment: 'center',
                 cell: ({ value, row }) => {
-                    return value.toUpperCase();
+                    return value?.toUpperCase();
                 },
                 thresholds: [
                     {
@@ -493,7 +493,7 @@ export const GatewayLogs = () => {
         setLogCount(apiAuditLogs.result.records?.length);
         setLoading(false);
 
-        const eventTypes = apiAuditLogs.result.records.map(log => log["event.type"].toUpperCase());
+        const eventTypes = apiAuditLogs.result.records.map(log => log["event.type"]?.toUpperCase());
         const uniqueEventTypes = new Set(eventTypes);
         const uniqueEventTypesArray = [...uniqueEventTypes];
         setEventTypes(uniqueEventTypesArray);
@@ -663,8 +663,8 @@ export const GatewayLogs = () => {
                             {eventTypes.sort().map((scope, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[scope.toUpperCase()]}
-                                        <Button onClick={handleEventTypeClick} key={index}>{scope.toUpperCase()}</Button>
+                                        {iconMap[scope?.toUpperCase()]}
+                                        <Button onClick={handleEventTypeClick} key={index}>{scope?.toUpperCase()}</Button>
                                     </Flex>
                                 )
                             })}
@@ -692,8 +692,8 @@ export const GatewayLogs = () => {
                             {userOrgs.sort().map((org, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[org.toUpperCase()]}
-                                        <Button onClick={handleOrgTypeClick} key={index}>{org.toUpperCase()}</Button>
+                                        {iconMap[org?.toUpperCase()]}
+                                        <Button onClick={handleOrgTypeClick} key={index}>{org?.toUpperCase()}</Button>
                                     </Flex>
                                 )
                             })}
