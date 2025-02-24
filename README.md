@@ -3,7 +3,7 @@ This project was created by myself, an SE of Dynatrace. This is not an official 
 
 # Prerequisites
 
-Install the Dynatarce dt-app toolkit:
+Install the Dynatarce dt-app toolkit and then make sure it is added to your $PATH in environment variables:
 ```
 npx dt-app@latest
 ```
