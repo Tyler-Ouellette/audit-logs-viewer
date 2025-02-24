@@ -3,6 +3,11 @@ This project was created by myself, an SE of Dynatrace. This is not an official 
 
 # Prerequisites
 
+Install the Dynatarce dt-app toolkit:
+```
+npx dt-app@latest
+```
+
 Users looking to access the application will need the following scopes to be able to access all the pages of the application:
 ```
   storage:logs:read
