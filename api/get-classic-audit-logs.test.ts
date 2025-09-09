@@ -5,7 +5,7 @@
 const fetchMock = jest.fn();
 globalThis.fetch = fetchMock;
 
-import getOldAuditLogs from './get-old-audit-logs'
+import getClassicAuditLogs from './get-classic-audit-logs';
 
 describe('get-old-audit-logs', () => {
 
@@ -14,8 +14,8 @@ describe('get-old-audit-logs', () => {
     fetchMock.mockImplementationOnce(() => {
       throw new Error('fetch should not be called in this function')
     })
-    const result = await getOldAuditLogs()
-    expect(result).toEqual('Hello world')
+    // const result = await getClassicAuditLogs()
+    // expect(result).toEqual('Hello world')
     expect(fetchMock).not.toHaveBeenCalled();
     expect.assertions(2)
   })

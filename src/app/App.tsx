@@ -1,7 +1,7 @@
 import { Page } from "@dynatrace/strato-components-preview";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { OldAuditLogs } from "./pages/OldAuditLogs";
+import { ClassicAuditLogs } from "./pages/ClassicAuditLogs";
 import { GatewayLogs } from "./pages/GatewayLogs";
 import { SettingsLogs } from "./pages/SettingsLogs";
 import { Header } from "./components/Header";
@@ -17,7 +17,7 @@ export const App = () => {
           <Route path="/" element={<SettingsLogs />} />
           <Route path="/settingsAuditLogs" element={<SettingsLogs />} />
           <Route path="/apiGatewayLogs" element={<GatewayLogs />} />
-          <Route path="/oldAuditLogs" element={<OldAuditLogs />} />
+          <Route path="/classicAuditLogs" element={<ClassicAuditLogs />} />
         </Routes>
       </Page.Main>
     </Page>

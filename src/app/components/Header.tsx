@@ -14,8 +14,8 @@ export const Header = () => {
         <AppHeader.NavItem as={Link} to="/apiGatewayLogs">
           API Gateway Audit Logs
         </AppHeader.NavItem>
-        <AppHeader.NavItem as={Link} to="/oldAuditLogs">
-          Old API Audit Logs
+        <AppHeader.NavItem as={Link} to="/classicAuditLogs">
+          Classic Audit Logs
         </AppHeader.NavItem>
       </AppHeader.NavItems>
     </AppHeader>
