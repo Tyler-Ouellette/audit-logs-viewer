@@ -530,7 +530,7 @@ export const ClassicAuditLogs = () => {
 
     }
 
-    const handleAppIdClick = (e) => {
+    const handleResourceClick = (e) => {
         e.preventDefault();
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
@@ -564,7 +564,7 @@ export const ClassicAuditLogs = () => {
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleSelectApp = (e) => {
+    const handleSelectResource = (e) => {
         setSelectedResources(e);
 
         if (e.length == 0) {
@@ -610,12 +610,12 @@ export const ClassicAuditLogs = () => {
                         <Flex flexDirection='column'>
                             <Flex justifyContent='flex-start' alignItems='center' key={'all'}>
                                 {iconMap["ALL"]}
-                                <Button onClick={handleAppIdClick} key={'all'}>ALL</Button>
+                                <Button onClick={handleResourceClick} key={'all'}>ALL</Button>
                             </Flex>
                             {resources.sort().map((scope, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        <Button onClick={handleAppIdClick} key={index}>{scope}</Button>
+                                        <Button onClick={handleResourceClick} key={index}>{scope}</Button>
                                     </Flex>
                                 )
                             })}
@@ -828,7 +828,7 @@ export const ClassicAuditLogs = () => {
 
                         {/* Select Drop down for schema Id */}
                         <FormField>
-                            <SelectV2 multiple clearable onChange={(e) => handleSelectApp(e)} value={selectedResources}>
+                            <SelectV2 multiple clearable onChange={(e) => handleSelectResource(e)} value={selectedResources}>
                                 <SelectV2.Trigger width='200px' placeholder="Select Resource" />
                                 <SelectV2.Content width="500px" showSelectedOptionsFirst={true}>
                                     <SelectV2.EmptyState>
