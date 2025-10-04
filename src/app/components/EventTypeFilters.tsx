@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Flex, Surface } from "@dynatrace/strato-components-preview";
-import { BlockIcon, CodeOffIcon, ConnectorIcon, DeleteIcon, EditIcon, LoginIcon, LogoutIcon, PlusIcon, ResetIcon } from '@dynatrace/strato-icons';
+import { BlockIcon, ConnectorIcon, DeleteIcon, EditIcon, LoginIcon, LogoutIcon, PlusIcon, ResetIcon } from '@dynatrace/strato-icons';
 
 export const EventTypeFilters = ({handleEventTypeClick}) => {
 

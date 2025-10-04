@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Flex, Surface } from "@dynatrace/strato-components-preview";
-import { AccountIcon, BlockIcon, BugReportIcon, CodeIcon, ConnectorIcon, ContainerIcon, DeleteIcon, DesktopIcon, EditIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, GroupIcon, HashtagIcon, LockIcon, LoginIcon, LogoutIcon, ManualIcon, OneAgentSignetIcon, PlusIcon, ResetIcon } from '@dynatrace/strato-icons';
+import { AccountIcon, GroupIcon, HashtagIcon, LockIcon, ResetIcon } from '@dynatrace/strato-icons';
 
 export const UserTypeFilters = ({ userTypes, handleUserTypeClick }) => {
     let icon;

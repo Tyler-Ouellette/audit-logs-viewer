@@ -6,7 +6,7 @@ import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, T
 import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
 import { Button, Chip, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem } from '@dynatrace/strato-components-preview';
-import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, UfoIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, WarningIcon } from '@dynatrace/strato-icons';
+import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, WarningIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
 import { TimeframeSelector } from '@dynatrace/strato-components-preview/forms';
@@ -410,10 +410,10 @@ export const SettingsLogs = () => {
     const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
     const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
-    const [logCount, setLogCount] = useState<String>('');
+    const [logCount, setLogCount] = useState<string>('');
     const [selectedSchemas, setSelectedSchemas] = useState<Array<any>>([]);
     const [selectedFilters, setSelectedFilters] = useState<Array<any>>([]);
-    const [selectedFilterType, setSelectedFilterType] = useState<String>('');
+    const [selectedFilterType, setSelectedFilterType] = useState<string>('');
 
     const auditData = useMemo(() => auditLogs, [auditLogs]);
 
@@ -774,6 +774,22 @@ export const SettingsLogs = () => {
         setSelectedSchemas(e);
     }
 
+    const handleForceRefresh = async () => {
+        if (!timeFrame) {
+            return;
+        }
+
+        setShowSheet(false);
+        setSelectedLogs([]);
+        setSelectedFilterType('');
+        setSelectedFilters([]);
+        setSelectedSchemas([]);
+        setOldestTimeFrame(timeFrame.from.absoluteDate);
+        setLastSelectedDate(timeFrame.from.absoluteDate);
+
+        await getAuditLogs(timeFrame);
+    }
+
     return (
         <Page style={{ height: 'unset', maxHeight: 'unset' }}>
             <Page.Sidebar resizable={true} preferredWidth={300}>
@@ -859,6 +875,17 @@ export const SettingsLogs = () => {
 
                         <TitleBar.Suffix style={{ minWidth: '250px' }}>
                             <Flex style={{ minWidth: 'fit-content' }} justifyContent='flex-end' alignItems='flex-end' >
+                                <Button
+                                    variant="emphasized"
+                                    onClick={handleForceRefresh}
+                                    disabled={loading || !timeFrame}
+                                    style={{ marginRight: '8px' }}
+                                >
+                                    <Button.Prefix>
+                                        <RefreshIcon />
+                                    </Button.Prefix>
+                                    Force Refresh
+                                </Button>
 
                                 <TimeframeSelector style={{ minWidth: 'fit-content' }} value={timeFrame} onChange={setTimeFrame} >
                                     <TimeframeSelector.Presets>
@@ -965,7 +992,7 @@ export const SettingsLogs = () => {
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column='dt.settings.schema_id'>
-                            {({ cell, row, column }) => (
+                            {({ cell }) => (
                                 <TableUserActions>
                                     <TableUserActions.CopyItem value={`${cell.value}`} />
                                     <TableUserActions.Item

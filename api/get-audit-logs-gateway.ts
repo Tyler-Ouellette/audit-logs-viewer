@@ -5,7 +5,7 @@ import type { TimeframeV2 } from '@dynatrace/strato-components-preview/core';
 
 export default async function (payload: TimeframeV2) {
 
-  var timeFrame;
+  let timeFrame;
 
   if (payload == undefined) {
     timeFrame = {

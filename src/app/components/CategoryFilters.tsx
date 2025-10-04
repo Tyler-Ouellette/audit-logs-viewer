@@ -1,8 +1,8 @@
 import React from "react";
-import {  Button, Flex, Surface } from "@dynatrace/strato-components-preview";
-import { AccountIcon, BugReportIcon, CodeIcon, ContainerIcon, DesktopIcon, GroupIcon, HashtagIcon, LockIcon, ManualIcon, OneAgentSignetIcon, ResetIcon } from "@dynatrace/strato-icons";
+import { Button, Flex, Surface } from "@dynatrace/strato-components-preview";
+import { BugReportIcon, CodeIcon, ContainerIcon, DesktopIcon, LockIcon, ManualIcon, OneAgentSignetIcon, ResetIcon } from "@dynatrace/strato-icons";
 
-export const CategoryFilters = ({userTypes, handleCategoryClick, handleUserTypeClick}) => {
+export const CategoryFilters = ({ handleCategoryClick }) => {
 
     return (
         <Flex flexDirection='column'>

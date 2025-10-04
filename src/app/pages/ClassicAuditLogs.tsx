@@ -4,8 +4,8 @@ import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
 import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, TableVariantConfig, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
 import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
-import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem, Paragraph, Chip } from '@dynatrace/strato-components-preview';
-import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, GroupIcon, HashtagIcon, LockIcon, LoginIcon, LogoutIcon, ManualIcon, OneAgentSignetIcon, PlusIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, UfoIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon } from '@dynatrace/strato-icons';
+import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem, Chip } from '@dynatrace/strato-components-preview';
+import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
 // import { CategoryFilters } from '../components/CategoryFilters';
@@ -220,10 +220,10 @@ export const ClassicAuditLogs = () => {
     const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
     const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
-    const [logCount, setLogCount] = useState<String>('');
+    const [logCount, setLogCount] = useState<string>('');
     const [selectedResources, setSelectedResources] = useState<Array<any>>([]);
     const [selectedFilters, setSelectedFilters] = useState<Array<any>>([]);
-    const [selectedFilterType, setSelectedFilterType] = useState<String>('');
+    const [selectedFilterType, setSelectedFilterType] = useState<string>('');
 
     const auditData = useMemo(() => auditLogs, [auditLogs]);
 
@@ -365,7 +365,7 @@ export const ClassicAuditLogs = () => {
         }
         if (selectedRowsData?.length < 1 && showSheet == true) {
             setShowSheet(false)
-        };
+        }
     }
 
     const clearFilters = (e) => {
@@ -584,6 +584,22 @@ export const ClassicAuditLogs = () => {
         setSelectedResources(e);
     }
 
+    const handleForceRefresh = async () => {
+        if (!timeFrame) {
+            return;
+        }
+
+        setShowSheet(false);
+        setSelectedLogs([]);
+        setSelectedFilterType('');
+        setSelectedFilters([]);
+        setSelectedResources([]);
+        setOldestQuery(timeFrame.from.absoluteDate);
+        setLastSelectedDate(timeFrame.from.absoluteDate);
+
+        await getAuditLogs(timeFrame);
+    }
+
     return (
         <Page style={{ height: 'unset', maxHeight: 'unset' }}>
             <Page.Sidebar resizable={true} preferredWidth={300}>
@@ -668,6 +684,17 @@ export const ClassicAuditLogs = () => {
 
                         <TitleBar.Suffix style={{ minWidth: '250px' }}>
                             <Flex style={{ minWidth: 'fit-content' }} justifyContent='flex-end' alignItems='flex-end' >
+                                <Button
+                                    variant="emphasized"
+                                    onClick={handleForceRefresh}
+                                    disabled={loading || !timeFrame}
+                                    style={{ marginRight: '8px' }}
+                                >
+                                    <Button.Prefix>
+                                        <RefreshIcon />
+                                    </Button.Prefix>
+                                    Force Refresh
+                                </Button>
 
                                 <TimeframeSelector style={{ minWidth: 'fit-content' }} value={timeFrame} onChange={setTimeFrame} >
                                     <TimeframeSelector.Presets>
