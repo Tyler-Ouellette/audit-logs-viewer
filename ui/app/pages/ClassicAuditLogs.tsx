@@ -14,6 +14,8 @@ import { IndividualLog } from '../components/IndividualLog';
 import { TimeframeSelector } from '@dynatrace/strato-components-preview/filters';
 import type { Timeframe } from '@dynatrace/strato-components-preview/core';
 import { subDays } from 'date-fns';
+import { useUserMap } from '../hooks/useUserMap';
+import { injectUserColumns } from '../utils/auditUtils';
 
 type ClassicAuditLog = {
     timestamp: string;
@@ -341,8 +343,9 @@ export const ClassicAuditLogs = () => {
 
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
+    const userMap = useUserMap(auditLogs as any[]);
 
-    const columns = useMemo<DataTableColumnDef<ClassicAuditLog>[]>(() => auditColumns, []);
+    const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});

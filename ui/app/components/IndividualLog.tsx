@@ -14,6 +14,7 @@ import {
 import DeepDiff from 'deep-diff';
 import ReactJson from '@microlink/react-json-view';
 import { diffLines } from 'diff';
+import { useUserInfo } from '../hooks/useUserMap';
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<any>> = {
     ACTIVE_GATE: ContainerIcon,
@@ -90,6 +91,9 @@ export const IndividualLog = ({ log }: { log: any }) => {
     const readableTime = new Date(log.timestamp).toLocaleString();
     const isSettings = log["event.provider"] === "SETTINGS";
 
+    const userId = log['user.id'];
+    const userInfo = useUserInfo(userId);
+
     const Diff = DeepDiff(log['details.json_before'], log['details.json_after']);
     const hasDiff = Diff != null && Diff.length > 0;
     const firstDiff = hasDiff ? Diff[0] : null;
@@ -156,6 +160,9 @@ export const IndividualLog = ({ log }: { log: any }) => {
                     <InfoField label="Authentication Token" value={log["authentication.token"]} />
                     <InfoField label="DT Security Context" value={log["dt.security_context"]} />
                     <InfoField label="User ID" value={log['user.id']} />
+                    {userInfo?.name && <InfoField label="First Name" value={userInfo.name} />}
+                    {userInfo?.surname && <InfoField label="Last Name" value={userInfo.surname} />}
+                    {userInfo?.email && <InfoField label="Email" value={userInfo.email} />}
                     <InfoField label="User Name" value={log['user.name']} />
                     <InfoField label="User Organization" value={log['user.organization']} />
                 </Grid>
