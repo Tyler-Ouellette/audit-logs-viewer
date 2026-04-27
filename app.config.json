@@ -1,10 +1,11 @@
 {
-  "environmentUrl": "ENTER YOUR TENANT URL HERE https://abc123.apps.dynatrace.com",
+  "environmentUrl": "https://umsaywsjuo.dev.apps.dynatracelabs.com",
   "app": {
     "name": "Audit Logs Viewer",
     "version": "0.0.7",
     "description": "An application to view and quickly filter audit logs.",
     "id": "my.audit.logs.viewer",
+    "icon": "./ui/assets/auditLogsIcon.png",
     "scopes": [
       {
         "name": "storage:logs:read",
@@ -23,6 +24,5 @@
         "comment": "Read old Audit Logs from API"
       }
     ]
-  },
-  "icon": "./src/assets/auditLogsIcon.png"
+  }
 }

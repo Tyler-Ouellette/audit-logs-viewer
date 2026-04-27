@@ -1,9 +1,9 @@
 import { auditLogsClient } from '@dynatrace-sdk/client-classic-environment-v2';
 import { queryExecutionClient } from '@dynatrace-sdk/client-query';
-import type { TimeframeV2 } from '@dynatrace/strato-components-preview/core';
+import type { Timeframe } from '@dynatrace/strato-components-preview/core';
 
 
-export default async function (payload: TimeframeV2) {
+export default async function (payload: Timeframe) {
 
   let timeFrame;
 

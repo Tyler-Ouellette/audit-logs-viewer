@@ -1,209 +1,159 @@
-import { subDays } from 'date-fns';
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react';
 import { functions } from "@dynatrace-sdk/app-utils";
 import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
-import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, TableVariantConfig, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
-import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
+import { DataTable, TableActionsMenu, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
+import type { DataTableColumnDef } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
-import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem, Chip } from '@dynatrace/strato-components-preview';
-import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon } from '@dynatrace/strato-icons';
+import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, Select, Surface, TextInput, ToggleButtonGroup, Chip } from '@dynatrace/strato-components-preview';
+import { SyntheticMonitoringSignetIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
-import { TimeframeSelector } from '@dynatrace/strato-components-preview/forms';
-import type { TimeframeV2 } from '@dynatrace/strato-components-preview/core';
+// import { CategoryFilters } from '../components/CategoryFilters';
+// import { EventTypeFilters } from '../components/EventTypeFilters';
+// import { UserTypeFilters } from '../components/UserTypeFilters';
+import { TimeframeSelector } from '@dynatrace/strato-components-preview/filters';
+import type { Timeframe } from '@dynatrace/strato-components-preview/core';
+import { subDays } from 'date-fns';
 
-const auditColumns: TableColumn[] = [
+
+
+const auditColumns: DataTableColumnDef<any>[] = [
     {
         header: 'Audit Information',
         id: 'auditInfo',
         columns: [
-            // UNIX EPOCH timestamp in nanoseconds
             {
-                header: 'Timestamp (DD/MM/YYYY)',
+                header: 'Timestamp',
+                id: 'timestamp',
                 accessor: 'timestamp',
                 columnType: 'date',
-                minWidth: 200,
-                autoWidth: true,
-            },
+                minWidth: 180,
 
-            // POST; PUT; GET
-            {
-                header: 'Type',
-                accessor: `"event.type"`,
-                // columnType: 'date',
-                minWidth: 125,
-                autoWidth: true,
-                alignment: 'center',
-                thresholds: [
-                    {
-                        value: 'CREATE',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Success.Accent,
-                    },
-                    {
-                        value: 'DELETE',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Critical.Accent,
-                    },
-                    {
-                        value: 'NO_CHANGE',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Success.Emphasized,
-                    },
-                    {
-                        value: 'UPDATE',
-                        comparator: 'equal-to',
-                        color: Colors.Text.Primary.OnAccent.Default,
-                        backgroundColor: Colors.Background.Container.Warning.Accent,
-                    },
-                ],
             },
-            // 200; success; failure
             {
-                header: 'Outcome',
-                accessor: `"event.outcome"`,
-                autoWidth: true,
+                header: 'Event ID',
+                id: '"event.id"',
+                accessor: '"event.id"',
+                minWidth: 300,
+
+
+            },
+            {
+                header: 'Kind',
+                id: '"event.kind"',
+                accessor: '"event.kind"',
+                minWidth: 120,
+
                 alignment: 'center',
-                cell: ({ value, row }) => {
-                    return value?.toUpperCase();
-                },
-                thresholds: [
-                    {
-                        value: 'success',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Success.Accent,
-                    },
-                    {
-                        value: '200',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Success.Accent,
-                    },
-                    {
-                        value: '202',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Success.Accent,
-                    },
-                    {
-                        value: 'failure',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Critical.Accent,
-                    },
-                    {
-                        value: '404',
-                        comparator: 'equal-to',
-                        backgroundColor: Colors.Background.Container.Warning.Accent,
-                    },
-                ],
             },
             {
                 header: 'Version',
-                accessor: `"event.version"`,
-                autoWidth: true,
-                maxAutoWidth: 120,
-                alignment: 'center'
+                id: '"event.version"',
+                accessor: '"event.version"',
+                minWidth: 100,
+
+                alignment: 'center',
+            },
+            {
+                header: 'Type',
+                id: '"event.type"',
+                accessor: '"event.type"',
+                minWidth: 120,
+
+                alignment: 'center',
             },
             {
                 header: 'Provider',
+                id: '"event.provider"',
                 accessor: '"event.provider"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
+                minWidth: 140,
+
+
             },
             {
-                header: 'App Id',
-                accessor: '"app.id"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
-            },
-            {
-                header: 'Origin Address',
-                accessor: '"origin.address"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
-            },
-            {
-                header: 'Origin Session',
-                accessor: '"origin.session"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
-            },
-            {
-                header: 'Origin X-Forwarded-For',
-                accessor: '"origin.x_forwarded_for"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
-            },
-            {
-                header: 'Resource',
-                accessor: 'resource',
-                minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
-            }
-        ]
-    },
-    {
-        header: 'Authentication Info',
-        id: 'authInfo',
-        columns: [
-            {
-                header: 'Client Id',
-                accessor: `"authentication.client.id"`,
-                minWidth: 200,
-                autoWidth: true,
-            },
-            {
-                header: 'Grant Type',
-                accessor: `"authentication.grant.type"`,
-                minWidth: 100,
-                autoWidth: true,
+                header: 'Outcome',
+                id: '"event.outcome"',
+                accessor: '"event.outcome"',
+                minWidth: 90,
+
                 alignment: 'center',
-            },
-            {
-                header: 'Auth Type',
-                accessor: `"authentication.type"`,
-                autoWidth: true,
-                alignment: 'center',
+                cell: ({ value }) => value?.toString()?.toUpperCase(),
             },
             {
                 header: 'DT Security Context',
-                accessor: `"dt.security_context"`,
-                autoWidth: true,
-                maxAutoWidth: 100,
+                id: '"dt.security_context"',
+                accessor: '"dt.security_context"',
+                minWidth: 140,
+
             },
-            // 35ba9499-f87c-4047-962c-14dc32e255e5
+            {
+                header: 'Origin Type',
+                id: '"origin.type"',
+                accessor: '"origin.type"',
+                minWidth: 120,
+
+            },
+            {
+                header: 'Origin Address',
+                id: '"origin.address"',
+                accessor: '"origin.address"',
+                minWidth: 140,
+
+
+            },
+            {
+                header: 'Resource',
+                id: 'resource',
+                accessor: 'resource',
+                minWidth: 220,
+
+
+            },
+        ],
+    },
+    {
+        header: 'Authentication / User',
+        id: 'authInfo',
+        columns: [
+            {
+                header: 'Auth Type',
+                id: '"authentication.type"',
+                accessor: '"authentication.type"',
+                minWidth: 120,
+
+                alignment: 'center',
+            },
+            {
+                header: 'Auth Token (masked)',
+                id: '"authentication.token"',
+                accessor: '"authentication.token"',
+                minWidth: 180,
+
+                cell: ({ value }) => {
+                    const v = value as string | undefined;
+                    if (!v) return <></>;
+                    // show a masked version to avoid exposing full token in table
+                    if (v.length <= 12) return <>{v}</>;
+                    return <>{`${v.slice(0, 6)}...${v.slice(-4)}`}</>;
+                },
+
+            },
             {
                 header: 'User Id',
-                accessor: `"user.id"`,
-                minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
+                id: '"user.id"',
+                accessor: '"user.id"',
+                minWidth: 200,
+
+
             },
-            // Wolfgang Amadeus Mozart
-            // {
-            //     header: 'User Name',
-            //     accessor: `"user.name"`,
-            //     minWidth: 150,
-            //     autoWidth: true,
-            //     maxAutoWidth: 300,
-            //     lineWrap: false
-            // },
-            // DYNATRACE; CUSTOMER; PARTNER
             {
                 header: 'User Organization',
-                accessor: `"user.organization"`,
-                minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
-            }
-        ]
+                id: '"user.organization"',
+                accessor: '"user.organization"',
+                minWidth: 140,
+
+            },
+        ],
     },
 
     // {
@@ -260,9 +210,9 @@ const auditColumns: TableColumn[] = [
     // }
 ];
 
-export const GatewayLogs = () => {
+export const ClassicAuditLogs = () => {
 
-    const [timeFrame, setTimeFrame] = useState<TimeframeV2 | null>({
+    const [timeFrame, setTimeFrame] = useState<Timeframe | null>({
         from: {
             absoluteDate: subDays(new Date(), 1).toISOString(),
             value: 'now()-24h',
@@ -280,13 +230,13 @@ export const GatewayLogs = () => {
     const [showSheet, setShowSheet] = useState<boolean>(false);
     const [auditLogs, setAuditLogs] = useState<Array<any>>([]);
     const [eventTypes, setEventTypes] = useState<Array<any>>([]);
-    const [appIds, setAppIds] = useState<Array<any>>([]);
+    const [resources, setResources] = useState<Array<any>>([]);
     const [userOrgs, setUserOrgs] = useState<Array<any>>([]);
     const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
     const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
     const [logCount, setLogCount] = useState<string>('');
-    const [selectedApps, setSelectedApps] = useState<Array<any>>([]);
+    const [selectedResources, setSelectedResources] = useState<Array<any>>([]);
     const [selectedFilters, setSelectedFilters] = useState<Array<any>>([]);
     const [selectedFilterType, setSelectedFilterType] = useState<string>('');
 
@@ -321,7 +271,7 @@ export const GatewayLogs = () => {
         "PROCESS_GROUP_INSTANCE": <TechnologiesIcon />,
         "PUT": <EditIcon />,
         "SERVICE": <ServicesIcon />,
-        "SYNTHETIC_TEST": <SyntheticMonitoringIcon />,
+        "SYNTHETIC_TEST": <SyntheticMonitoringSignetIcon />,
         "TOKEN": <CodeIcon />,
         "UPDATE": <EditIcon />,
         "USER": <AccountIcon />,
@@ -378,11 +328,11 @@ export const GatewayLogs = () => {
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
 
-    const columns = useMemo<TableColumn[]>(() => auditColumns, []);
+    const columns = useMemo<DataTableColumnDef<any>[]>(() => auditColumns, []);
 
-    type ColumnVisibilityType = Record<string, 'visible' | 'hidden'>;
-    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>(createDefaultVisibilityObjectForColumns(columns));
-    const [columnVisibility2, setColumnVisibility2] = useState<ColumnVisibilityType>(createDefaultVisibilityObjectForColumns(columns));
+    type ColumnVisibilityType = Record<string, boolean>;
+    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
+    const [columnVisibility2, setColumnVisibility2] = useState<ColumnVisibilityType>({});
 
     function onColumnVisibilityChange(columnVisibility: ColumnVisibilityType) {
         setColumnVisibility(columnVisibility);
@@ -391,7 +341,7 @@ export const GatewayLogs = () => {
         setColumnVisibility2(columnVisibility2);
     }
 
-    const tableVariant: TableVariantConfig = useMemo(
+    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable' }>(
         () => ({
             rowDensity: rowDensity as 'default' | 'condensed' | 'comfortable',
         }),
@@ -404,33 +354,23 @@ export const GatewayLogs = () => {
             Object.values(entry)
                 .join()
                 .toLowerCase()
-                .includes((filters[filterName].value as string).toLowerCase())
+                .includes((filters[filterName].value as string)?.toLowerCase())
         );
     }
 
-    const [sortChangeMessage, setSortChangeMessage] = useState(
-        'onSortChange: unset'
-    );
-    // onSortChange handler
-    const onSortChange = (columnId, direction) => {
-        setSortChangeMessage(
-            direction === 'unset'
-                ? 'onSortChange: unset'
-                : `onSortChange: columnId :: ${columnId}, direction :: ${direction}`
-        );
-    };
-
     const myRowSelectionChangedListener = (
-        selectedRows: Record<string, boolean>,
-        selectedRowsData: any[],
-        trigger: 'user' | 'internal'
+        selectedRows: Record<string, boolean>
     ) => {
-        if (selectedRowsData?.length >= 1) {
+        const selectedRowsData = Object.entries(selectedRows)
+            .filter(([, selected]) => selected)
+            .map(([index]) => filteredData[parseInt(index)])
+            .filter(Boolean);
+        if (selectedRowsData.length >= 1) {
             setSelectedLogs(selectedRowsData)
         }
-        if (selectedRowsData?.length < 1 && showSheet == true) {
+        if (selectedRowsData.length < 1 && showSheet == true) {
             setShowSheet(false)
-        };
+        }
     }
 
     const clearFilters = (e) => {
@@ -439,7 +379,7 @@ export const GatewayLogs = () => {
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
             setLogCount(currentTimeFrameLogs.length.toString());
-            setSelectedApps([]);
+            setSelectedResources([]);
             return;
         }
         if (e === "shift") {
@@ -447,18 +387,18 @@ export const GatewayLogs = () => {
             useThis.shift();
             if (useThis.length == 0) {
                 setSelectedFilterType('')
-                setAuditLogs(currentTimeFrameLogs);
+                setSelectedResources([]);
                 setSelectedFilters([]);
                 setLogCount(currentTimeFrameLogs.length.toString());
-                setSelectedApps([]);
+                setSelectedResources([]);
                 return;
             }
 
             const useThese = [...currentTimeFrameLogs];
-            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
+            const filteredLogs = useThese?.filter(log => useThis.includes(log.resource));
             setSelectedFilters(useThis);
-            setSelectedApps(useThis);
-            setAuditLogs(filteredLogs)
+                setSelectedResources(useThis);
+                    setSelectedResources([]);
             setLogCount(filteredLogs.length.toString());
             return;
         }
@@ -467,9 +407,9 @@ export const GatewayLogs = () => {
             useThis.splice(e, 1);
 
             const useThese = [...currentTimeFrameLogs];
-            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
+            const filteredLogs = useThese?.filter(log => useThis.includes(log.resource));
             setSelectedFilters(useThis);
-            setSelectedApps(useThis);
+            setSelectedResources(useThis);
             setAuditLogs(filteredLogs)
             setLogCount(filteredLogs.length.toString());
             return;
@@ -479,13 +419,13 @@ export const GatewayLogs = () => {
         setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters([]);
         setLogCount(currentTimeFrameLogs.length.toString());
-        setSelectedApps([]);
+    setSelectedResources([]);
         return;
     }
 
     const getAuditLogs = async (timeFrame) => {
         setLoading(true);
-        const apiAuditLogs = await functions.call('get-audit-logs-gateway', { data: timeFrame }).then(response => response.json());
+        const apiAuditLogs = await functions.call('get-classic-audit-logs', { data: timeFrame }).then(response => response.json());
 
         setCurrentTimeFrameLogs(apiAuditLogs.result.records);
         setAuditLogs(apiAuditLogs.result.records);
@@ -499,10 +439,10 @@ export const GatewayLogs = () => {
         setEventTypes(uniqueEventTypesArray);
 
 
-        const appIds = apiAuditLogs.result.records.map(log => log["app.id"]);
-        const uniqueAppIds = new Set(appIds);
-        const appArray = [...uniqueAppIds];
-        setAppIds(appArray);
+    const resources = apiAuditLogs.result.records.map(log => log.resource);
+    const uniqueResources = new Set(resources);
+    const resourceArray = [...uniqueResources];
+    setResources(resourceArray);
 
         const userOrgTypes = apiAuditLogs.result.records.map(log => log["user.organization"]);
         const userOrgSchema = new Set(userOrgTypes);
@@ -587,7 +527,7 @@ export const GatewayLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = useThese?.filter(log => log["event.type"]?.toLowerCase() === e.target.innerText.replace(/\s+/g, '_')?.toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('Event Type')
@@ -595,7 +535,7 @@ export const GatewayLogs = () => {
 
     }
 
-    const handleAppIdClick = (e) => {
+    const handleResourceClick = (e) => {
         e.preventDefault();
         if (e.target.innerText == "ALL") {
             setSelectedFilterType('')
@@ -605,11 +545,11 @@ export const GatewayLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["app.id"] === e.target.innerText.replace(/\s+/g, '_'));
-        setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
-        setSelectedFilterType('App Id')
-        setLogCount(filteredLogs.length.toString());
+    const filteredLogs = useThese?.filter(log => log.resource === e.target.innerText.replace(/\s+/g, '_'));
+    setAuditLogs(filteredLogs);
+    setSelectedFilters([e.target.innerText]);
+    setSelectedFilterType('Resource')
+    setLogCount(filteredLogs.length.toString());
     }
 
     const handleOrgTypeClick = (e) => {
@@ -622,15 +562,15 @@ export const GatewayLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["user.organization"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = useThese?.filter(log => log["user.organization"]?.toLowerCase() === e.target.innerText.replace(/\s+/g, '_')?.toLowerCase());
         setAuditLogs(filteredLogs);
         setSelectedFilters([e.target.innerText]);
         setSelectedFilterType('User Organization')
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleSelectApp = (e) => {
-        setSelectedApps(e);
+    const handleSelectResource = (e) => {
+        setSelectedResources(e);
 
         if (e.length == 0) {
             setSelectedFilterType('')
@@ -641,12 +581,12 @@ export const GatewayLogs = () => {
         }
 
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => e.includes(log["app.id"]));
+        const filteredLogs = useThese?.filter(log => e.includes(log.resource));
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
-        setSelectedFilterType('App Id');
+        setSelectedFilterType('Resource');
         setLogCount(filteredLogs.length.toString());
-        setSelectedApps(e);
+        setSelectedResources(e);
     }
 
     const handleForceRefresh = async () => {
@@ -658,7 +598,7 @@ export const GatewayLogs = () => {
         setSelectedLogs([]);
         setSelectedFilterType('');
         setSelectedFilters([]);
-        setSelectedApps([]);
+        setSelectedResources([]);
         setOldestQuery(timeFrame.from.absoluteDate);
         setLastSelectedDate(timeFrame.from.absoluteDate);
 
@@ -686,17 +626,17 @@ export const GatewayLogs = () => {
                             })}
                         </Flex>
                     </Surface>
-                    <h3 style={{ margin: 5 }}>App Filters</h3>
+                    <h3 style={{ margin: 5 }}>Resource Filters</h3>
                     <Surface>
                         <Flex flexDirection='column'>
                             <Flex justifyContent='flex-start' alignItems='center' key={'all'}>
                                 {iconMap["ALL"]}
-                                <Button onClick={handleAppIdClick} key={'all'}>ALL</Button>
+                                <Button onClick={handleResourceClick} key={'all'}>ALL</Button>
                             </Flex>
-                            {appIds.sort().map((scope, index) => {
+                            {resources.sort().map((scope, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        <Button onClick={handleAppIdClick} key={index}>{scope}</Button>
+                                        <Button onClick={handleResourceClick} key={index}>{scope}</Button>
                                     </Flex>
                                 )
                             })}
@@ -724,7 +664,7 @@ export const GatewayLogs = () => {
                         <TitleBar.Prefix>
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
-                        <TitleBar.Title>View Audit Logs - API Gateway</TitleBar.Title>
+                        <TitleBar.Title>View Audit Logs - Classic API</TitleBar.Title>
                         <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
                             Selected Filter:
                             <Grid gridTemplateColumns={'repeat(3, 250px)'}>
@@ -779,128 +719,124 @@ export const GatewayLogs = () => {
                     columnVisibility={columnVisibility}
                     // columnOrder={columnOrder}
                     variant={tableVariant}
-                    enableDefaultSort={true}
                     resizable
                     selectableRows
                     sortable
-                    onSortChange={onSortChange}
                     onRowSelectionChange={myRowSelectionChangedListener}
                     // onColumnOrderChange={handleColumnOrderChange}
                     onColumnVisibilityChange={onColumnVisibilityChange}
                     key={"mainTable"}
                 >
-                    <DataTable.UserActions>
                         <DataTable.CellActions>
-                            {({ cell }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                </TableUserActions>
+                            {({ cellValue }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column="eventType">
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.eventType?.toLowerCase() === (cellValue as string).replace(/\s+/g, '_')?.toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Event Type');
                                             setLogCount(filteredLogs.length.toString());
 
 
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column="category">
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Category');
                                             setLogCount(filteredLogs.length.toString());
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column="userType">
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('User Type');
                                             setLogCount(filteredLogs.length.toString());
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column='app.id'>
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log["app.id"] === cell.value);
+                                            const filteredLogs = oldestLogs?.filter(log => log.resource === cellValue);
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
-                                            setSelectedFilterType('App Id');
+                                            setSelectedFilters([cellValue]);
+                                            setSelectedFilterType('Resource');
                                             setLogCount(filteredLogs.length.toString());
-                                            setSelectedApps([cell.value]);
+                                            setSelectedResources([cellValue]);
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.ColumnActions>
                             {() => (
                                 <>
-                                    <TableUserActions>
-                                        <TableUserActions.HideColumn />
-                                        <TableUserActions.LineWrap />
-                                        {/* <TableUserActions.ColumnOrder /> */}
-                                    </TableUserActions>
+                                    <TableActionsMenu>
+                                        <TableActionsMenu.HideColumn />
+                                        <TableActionsMenu.LineWrap />
+                                        {/* <TableActionsMenu.ColumnOrder /> */}
+                                    </TableActionsMenu>
 
                                 </>
                             )}
                         </DataTable.ColumnActions>
-                    </DataTable.UserActions>
                     <DataTable.TableActions>
 
                         {/* Custom Action - Clear Filters */}
@@ -920,20 +856,20 @@ export const GatewayLogs = () => {
 
                         {/* Select Drop down for schema Id */}
                         <FormField>
-                            <SelectV2 multiple clearable onChange={(e) => handleSelectApp(e)} value={selectedApps}>
-                                <SelectV2.Trigger width='200px' placeholder="Select App Id" />
-                                <SelectV2.Content width="500px" showSelectedOptionsFirst={true}>
-                                    <SelectV2.EmptyState>
-                                        No matching countries found.
-                                    </SelectV2.EmptyState>
-                                    <SelectV2.Filter />
-                                    {appIds.filter((appId) => appId?.length > 0).map((appId, index) => {
+                            <Select multiple clearable onChange={(e) => handleSelectResource(e)} value={selectedResources}>
+                                <Select.Trigger width='200px' placeholder="Select Resource" />
+                                <Select.Content width="500px" showSelectedOptionsFirst={true}>
+                                    <Select.EmptyState>
+                                        No matching resources found.
+                                    </Select.EmptyState>
+                                    <Select.Filter />
+                                    {resources.filter((r) => r).map((r, index) => {
                                         return (
-                                            <SelectV2.Option key={index} value={appId}>{appId}</SelectV2.Option>
+                                            <Select.Option key={index} value={r}>{r}</Select.Option>
                                         )
                                     })}
-                                </SelectV2.Content>
-                            </SelectV2>
+                                </Select.Content>
+                            </Select>
                         </FormField>
 
                         {/* Custom Action - Clear Filters */}
@@ -951,15 +887,15 @@ export const GatewayLogs = () => {
                         <Flex flexDirection="column" flex={1}>
                             <Flex justifyContent="end">
                                 <ToggleButtonGroup value={rowDensity} onChange={setRowDensity}>
-                                    <ToggleButtonGroupItem value="condensed">
+                                    <ToggleButtonGroup.Item value="condensed">
                                         Condensed
-                                    </ToggleButtonGroupItem>
-                                    <ToggleButtonGroupItem value="default">
+                                    </ToggleButtonGroup.Item>
+                                    <ToggleButtonGroup.Item value="default">
                                         Default
-                                    </ToggleButtonGroupItem>
-                                    <ToggleButtonGroupItem value="comfortable">
+                                    </ToggleButtonGroup.Item>
+                                    <ToggleButtonGroup.Item value="comfortable">
                                         Comfortable
-                                    </ToggleButtonGroupItem>
+                                    </ToggleButtonGroup.Item>
                                 </ToggleButtonGroup>
                             </Flex>
                         </Flex>
