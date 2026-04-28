@@ -2,17 +2,17 @@ import { subDays } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react'
 import { functions } from "@dynatrace-sdk/app-utils";
 import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
-import { DataTable, TableUserActions, createDefaultVisibilityObjectForColumns, TableVariantConfig, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
-import type { TableColumn } from '@dynatrace/strato-components-preview/tables';
+import { DataTable, TableActionsMenu, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
+import type { DataTableColumnDef } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
-import { Button, Chip, FilterBar, FilterItemValues, Flex, FormField, Grid, SelectV2, Surface, TextInput, ToggleButtonGroup, ToggleButtonGroupItem } from '@dynatrace/strato-components-preview';
-import { SyntheticMonitoringIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, WarningIcon } from '@dynatrace/strato-icons';
+import { Button, Chip, FilterBar, FilterItemValues, Flex, FormField, Grid, Select, Surface, TextInput, ToggleButtonGroup } from '@dynatrace/strato-components-preview';
+import { SyntheticMonitoringSignetIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, WarningIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
-import { TimeframeSelector } from '@dynatrace/strato-components-preview/forms';
-import type { TimeframeV2 } from '@dynatrace/strato-components-preview/core';
+import { TimeframeSelector } from '@dynatrace/strato-components-preview/filters';
+import type { Timeframe } from '@dynatrace/strato-components-preview/core';
 
-const auditColumns: TableColumn[] = [
+const auditColumns: DataTableColumnDef<any>[] = [
     {
         header: 'Audit Information',
         id: 'auditInfo',
@@ -20,19 +20,21 @@ const auditColumns: TableColumn[] = [
             // UNIX EPOCH timestamp in nanoseconds
             {
                 header: 'Timestamp (DD/MM/YYYY)',
+                id: 'timestamp',
                 accessor: 'timestamp',
                 columnType: 'date',
                 minWidth: 200,
-                autoWidth: true,
+
             },
 
             // POST; PUT; GET
             {
                 header: 'Type',
+                id: `"event.type"`,
                 accessor: `"event.type"`,
                 // columnType: 'date',
                 minWidth: 125,
-                autoWidth: true,
+
                 alignment: 'center',
                 thresholds: [
                     {
@@ -91,10 +93,11 @@ const auditColumns: TableColumn[] = [
             // 200; success; failure
             {
                 header: 'Outcome',
+                id: `"event.outcome"`,
                 accessor: `"event.outcome"`,
-                autoWidth: true,
+
                 alignment: 'center',
-                cell: ({ value, row }) => {
+                cell: ({ value }) => {
                     if (typeof (value) === "string") {
                         return value.toUpperCase();
                     }
@@ -122,17 +125,14 @@ const auditColumns: TableColumn[] = [
             },
             {
                 header: 'Version',
+                id: `"event.version"`,
                 accessor: `"event.version"`,
-                autoWidth: true,
-                maxAutoWidth: 120,
                 alignment: 'center'
             },
             {
                 header: 'Provider',
+                id: '"event.provider"',
                 accessor: '"event.provider"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
             // {
             //     header: 'App Id',
@@ -143,10 +143,8 @@ const auditColumns: TableColumn[] = [
             // },
             {
                 header: 'Origin Address',
+                id: '"origin.address"',
                 accessor: '"origin.address"',
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
             // {
             //     header: 'Origin Session',
@@ -164,20 +162,18 @@ const auditColumns: TableColumn[] = [
             // },
             {
                 header: 'Resource',
+                id: 'resource',
                 accessor: 'resource',
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
             {
                 header: 'Source',
+                id: '"details.source"',
                 accessor: '"details.source"',
-                autoWidth: true,
+
                 alignment: 'center',
-                maxAutoWidth: 300,
-                cell: ({ value, row }) => {
-                    return value.toUpperCase();
+                cell: ({ value }) => {
+                    return value?.toUpperCase();
                 },
             },
         ]
@@ -188,77 +184,72 @@ const auditColumns: TableColumn[] = [
         columns: [
             {
                 header: 'Schema ID',
+                id: '"details.dt.settings.schema_id"',
                 accessor: '"details.dt.settings.schema_id"',
                 minWidth: 300
             },
             {
                 header: 'Schema Version',
+                id: '"details.dt.settings.schema_version"',
                 accessor: '"details.dt.settings.schema_version"',
-                autoWidth: true,
+
                 alignment: 'left'
             },
             {
                 header: 'Object ID',
+                id: '"details.dt.settings.object_id"',
                 accessor: '"details.dt.settings.object_id"',
-                autoWidth: true,
-                maxAutoWidth: 400
             },
             {
                 header: 'Object Summary',
+                id: '"details.dt.settings.object_summary"',
                 accessor: '"details.dt.settings.object_summary"',
-                autoWidth: true,
-                maxAutoWidth: 400
             },
             {
                 header: 'Scope Type',
+                id: '"details.dt.settings.scope_type"',
                 accessor: '"details.dt.settings.scope_type"',
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
                 alignment: 'center',
-                cell: ({ value, row }) => {
-                    return value.toUpperCase();
+                cell: ({ value }) => {
+                    return value?.toUpperCase();
                 },
             },
             {
                 header: 'Scope Name',
+                id: '"details.dt.settings.scope_name"',
                 accessor: '"details.dt.settings.scope_name"',
                 minWidth: 400,
             },
             {
                 header: 'Scope Id',
+                id: '"details.dt.settings.scope_id"',
                 accessor: '"details.dt.settings.scope_id"',
                 minWidth: 250,
-                autoWidth: true,
-                maxAutoWidth: 400,
             },
             {
                 header: 'JSON Before Changes',
+                id: '"details.json_before"',
                 accessor: '"details.json_before"',
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
             },
             {
                 header: 'JSON After Changes',
+                id: '"details.json_after"',
                 accessor: '"details.json_after"',
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
             },
             {
                 header: 'JSON Patch',
+                id: '"details.json_patch"',
                 accessor: '"details.json_patch"',
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
             },
             {
                 header: 'Position Changes',
+                id: '"details.position"',
                 accessor: '"details.position"',
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
             },
 
         ]
@@ -282,50 +273,42 @@ const auditColumns: TableColumn[] = [
             // },
             {
                 header: 'Auth Type',
+                id: `"authentication.type"`,
                 accessor: `"authentication.type"`,
-                autoWidth: true,
+
                 alignment: 'center',
             },
             {
                 header: 'DT Security Context',
+                id: `"dt.security_context"`,
                 accessor: `"dt.security_context"`,
-                autoWidth: true,
-                maxAutoWidth: 100,
             },
             // 35ba9499-f87c-4047-962c-14dc32e255e5
             {
                 header: 'User Id',
+                id: `"user.id"`,
                 accessor: `"user.id"`,
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
             // Wolfgang Amadeus Mozart
             {
                 header: 'User Name',
+                id: `"user.name"`,
                 accessor: `"user.name"`,
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
             // DYNATRACE; CUSTOMER; PARTNER
             {
                 header: 'User Organization',
+                id: `"user.organization"`,
                 accessor: `"user.organization"`,
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
             {
                 header: 'Authentication Token',
+                id: `"authentication.token"`,
                 accessor: `"authentication.token"`,
                 minWidth: 150,
-                autoWidth: true,
-                maxAutoWidth: 300,
-                lineWrap: false
             },
         ]
     },
@@ -386,7 +369,7 @@ const auditColumns: TableColumn[] = [
 
 export const SettingsLogs = () => {
 
-    const [timeFrame, setTimeFrame] = useState<TimeframeV2 | null>({
+    const [timeFrame, setTimeFrame] = useState<Timeframe | null>({
         from: {
             absoluteDate: subDays(new Date(), 1).toISOString(),
             value: 'now()-24h',
@@ -442,7 +425,7 @@ export const SettingsLogs = () => {
         "PROCESS_GROUP": <TechnologiesIcon />,
         "PROCESS_GROUP_INSTANCE": <TechnologiesIcon />,
         "SERVICE": <ServicesIcon />,
-        "SYNTHETIC_TEST": <SyntheticMonitoringIcon />,
+        "SYNTHETIC_TEST": <SyntheticMonitoringSignetIcon />,
         "TOKEN": <CodeIcon />,
         "UPDATE": <EditIcon />,
         "USER": <AccountIcon />,
@@ -499,11 +482,11 @@ export const SettingsLogs = () => {
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
 
-    const columns = useMemo<TableColumn[]>(() => auditColumns, []);
+    const columns = useMemo<DataTableColumnDef<any>[]>(() => auditColumns, []);
 
-    type ColumnVisibilityType = Record<string, 'visible' | 'hidden'>;
-    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>(createDefaultVisibilityObjectForColumns(columns));
-    const [columnVisibility2, setColumnVisibility2] = useState<ColumnVisibilityType>(createDefaultVisibilityObjectForColumns(columns));
+    type ColumnVisibilityType = Record<string, boolean>;
+    const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
+    const [columnVisibility2, setColumnVisibility2] = useState<ColumnVisibilityType>({});
 
     function onColumnVisibilityChange(columnVisibility: ColumnVisibilityType) {
         setColumnVisibility(columnVisibility);
@@ -512,7 +495,7 @@ export const SettingsLogs = () => {
         setColumnVisibility2(columnVisibility2);
     }
 
-    const tableVariant: TableVariantConfig = useMemo(
+    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable' }>(
         () => ({
             rowDensity: rowDensity as 'default' | 'condensed' | 'comfortable',
         }),
@@ -529,28 +512,17 @@ export const SettingsLogs = () => {
         );
     }
 
-    const [sortChangeMessage, setSortChangeMessage] = useState(
-        'onSortChange: unset'
-    );
-    // onSortChange handler
-    const onSortChange = (columnId, direction) => {
-        setSortChangeMessage(
-            direction === 'unset'
-                ? 'onSortChange: unset'
-                : `onSortChange: columnId :: ${columnId}, direction :: ${direction}`
-        );
-    };
-
     const myRowSelectionChangedListener = (
-        selectedRows: Record<string, boolean>,
-        selectedRowsData: any[],
-        trigger: 'user' | 'internal'
+        selectedRows: Record<string, boolean>
     ) => {
-
-        if (selectedRowsData?.length >= 1) {
+        const selectedRowsData = Object.entries(selectedRows)
+            .filter(([, selected]) => selected)
+            .map(([index]) => filteredData[parseInt(index)])
+            .filter(Boolean);
+        if (selectedRowsData.length >= 1) {
             setSelectedLogs(selectedRowsData)
         }
-        if (selectedRowsData?.length < 1 && showSheet == true) {
+        if (selectedRowsData.length < 1 && showSheet == true) {
             setShowSheet(false)
         };
     }
@@ -905,128 +877,124 @@ export const SettingsLogs = () => {
                     columnVisibility={columnVisibility}
                     // columnOrder={columnOrder}
                     variant={tableVariant}
-                    enableDefaultSort={true}
                     resizable
                     selectableRows
                     sortable
-                    onSortChange={onSortChange}
                     onRowSelectionChange={myRowSelectionChangedListener}
                     // onColumnOrderChange={handleColumnOrderChange}
                     onColumnVisibilityChange={onColumnVisibilityChange}
                     key={"mainTable"}
                 >
-                    <DataTable.UserActions>
                         <DataTable.CellActions>
-                            {({ cell }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                </TableUserActions>
+                            {({ cellValue }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column="eventType">
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Event Type');
                                             setLogCount(filteredLogs.length.toString());
 
 
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column="category">
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Category');
                                             setLogCount(filteredLogs.length.toString());
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column="userType">
-                            {({ cell, row, column }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue, row }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === cell.value.replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('User Type');
                                             setLogCount(filteredLogs.length.toString());
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.CellActions column='dt.settings.schema_id'>
-                            {({ cell }) => (
-                                <TableUserActions>
-                                    <TableUserActions.CopyItem value={`${cell.value}`} />
-                                    <TableUserActions.Item
+                            {({ cellValue }) => (
+                                <TableActionsMenu>
+                                    <TableActionsMenu.CopyItem value={`${cellValue}`} />
+                                    <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log["dt.settings.schema_id"] === cell.value);
+                                            const filteredLogs = oldestLogs?.filter(log => log["dt.settings.schema_id"] === cellValue);
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cell.value]);
+                                            setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Schema Id');
                                             setLogCount(filteredLogs.length.toString());
-                                            setSelectedSchemas([cell.value]);
+                                            setSelectedSchemas([cellValue]);
                                         }}
                                     >
-                                        <TableUserActions.ItemIcon>
+                                        <TableActionsMenu.Prefix>
                                             <FilterIcon />
-                                        </TableUserActions.ItemIcon>
+                                        </TableActionsMenu.Prefix>
                                         Set as filter
-                                    </TableUserActions.Item>
-                                </TableUserActions>
+                                    </TableActionsMenu.Item>
+                                </TableActionsMenu>
                             )}
                         </DataTable.CellActions>
                         <DataTable.ColumnActions>
                             {() => (
                                 <>
-                                    <TableUserActions>
-                                        <TableUserActions.HideColumn />
-                                        <TableUserActions.LineWrap />
-                                        {/* <TableUserActions.ColumnOrder /> */}
-                                    </TableUserActions>
+                                    <TableActionsMenu>
+                                        <TableActionsMenu.HideColumn />
+                                        <TableActionsMenu.LineWrap />
+                                        {/* <TableActionsMenu.ColumnOrder /> */}
+                                    </TableActionsMenu>
 
                                 </>
                             )}
                         </DataTable.ColumnActions>
-                    </DataTable.UserActions>
                     <DataTable.TableActions>
 
                         {/* Custom Action - Clear Filters */}
@@ -1046,20 +1014,20 @@ export const SettingsLogs = () => {
 
                         {/* Select Drop down for schema Id */}
                         <FormField>
-                            <SelectV2 multiple clearable onChange={(e) => handleSelectSchema(e)} value={selectedSchemas}>
-                                <SelectV2.Trigger width='200px' placeholder="Select a schema Id" />
-                                <SelectV2.Content width="500px" showSelectedOptionsFirst={true}>
-                                    <SelectV2.EmptyState>
+                            <Select multiple clearable onChange={(e) => handleSelectSchema(e)} value={selectedSchemas}>
+                                <Select.Trigger width='200px' placeholder="Select a schema Id" />
+                                <Select.Content width="500px" showSelectedOptionsFirst={true}>
+                                    <Select.EmptyState>
                                         No matching countries found.
-                                    </SelectV2.EmptyState>
-                                    <SelectV2.Filter />
+                                    </Select.EmptyState>
+                                    <Select.Filter />
                                     {schemaIds.filter((schema) => schema?.length > 0).map((schema, index) => {
                                         return (
-                                            <SelectV2.Option key={index} value={schema}>{schema}</SelectV2.Option>
+                                            <Select.Option key={index} value={schema}>{schema}</Select.Option>
                                         )
                                     })}
-                                </SelectV2.Content>
-                            </SelectV2>
+                                </Select.Content>
+                            </Select>
                         </FormField>
 
                         {/* Custom Action - Clear Filters */}
@@ -1077,15 +1045,15 @@ export const SettingsLogs = () => {
                         <Flex flexDirection="column" flex={1}>
                             <Flex justifyContent="end">
                                 <ToggleButtonGroup value={rowDensity} onChange={setRowDensity}>
-                                    <ToggleButtonGroupItem value="condensed">
+                                    <ToggleButtonGroup.Item value="condensed">
                                         Condensed
-                                    </ToggleButtonGroupItem>
-                                    <ToggleButtonGroupItem value="default">
+                                    </ToggleButtonGroup.Item>
+                                    <ToggleButtonGroup.Item value="default">
                                         Default
-                                    </ToggleButtonGroupItem>
-                                    <ToggleButtonGroupItem value="comfortable">
+                                    </ToggleButtonGroup.Item>
+                                    <ToggleButtonGroup.Item value="comfortable">
                                         Comfortable
-                                    </ToggleButtonGroupItem>
+                                    </ToggleButtonGroup.Item>
                                 </ToggleButtonGroup>
                             </Flex>
                         </Flex>
