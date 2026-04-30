@@ -31,7 +31,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Type',
                 id: `"event.type"`,
-                accessor: `"event.type"`,
+                accessor: '[\"event.type\"]',
                 // columnType: 'date',
                 minWidth: 125,
 
@@ -94,8 +94,8 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Outcome',
                 id: `"event.outcome"`,
-                accessor: `"event.outcome"`,
-
+                accessor: '[\"event.outcome\"]',
+                minWidth: 100,
                 alignment: 'center',
                 cell: ({ value }) => {
                     if (typeof (value) === "string") {
@@ -126,17 +126,21 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Version',
                 id: `"event.version"`,
-                accessor: `"event.version"`,
+                accessor: '[\"event.version\"]',
+                minWidth: 100,
                 alignment: 'center'
             },
             {
                 header: 'Provider',
                 id: '"event.provider"',
-                accessor: '"event.provider"',
+                accessor: '[\"event.provider\"]',
+                minWidth: 150,
+                alignment: 'center'
+
             },
             // {
             //     header: 'App Id',
-            //     accessor: '"app.id"',
+            //     accessor: '[\"app.id\"]',
             //     autoWidth: true,
             //     maxAutoWidth: 300,
             //     lineWrap: false
@@ -144,18 +148,19 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Origin Address',
                 id: '"origin.address"',
-                accessor: '"origin.address"',
+                accessor: '[\"origin.address\"]',
+                minWidth: 150,
             },
             // {
             //     header: 'Origin Session',
-            //     accessor: '"origin.session"',
+            //     accessor: '[\"origin.session\"]',
             //     autoWidth: true,
             //     maxAutoWidth: 300,
             //     lineWrap: false
             // },
             // {
             //     header: 'Origin X-Forwarded-For',
-            //     accessor: '"origin.x_forwarded_for"',
+            //     accessor: '[\"origin.x_forwarded_for\"]',
             //     autoWidth: true,
             //     maxAutoWidth: 300,
             //     lineWrap: false
@@ -165,16 +170,17 @@ const auditColumns: DataTableColumnDef<any>[] = [
                 id: 'resource',
                 accessor: 'resource',
                 minWidth: 150,
+                alignment: 'left'
             },
             {
                 header: 'Source',
                 id: '"details.source"',
-                accessor: '"details.source"',
-
-                alignment: 'center',
+                accessor: '[\"details.source\"]',
+                minWidth: 100,
                 cell: ({ value }) => {
                     return value?.toUpperCase();
                 },
+                alignment: 'left'
             },
         ]
     },
@@ -185,30 +191,32 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Schema ID',
                 id: '"details.dt.settings.schema_id"',
-                accessor: '"details.dt.settings.schema_id"',
+                accessor: '[\"details.dt.settings.schema_id\"]',
                 minWidth: 300
             },
             {
                 header: 'Schema Version',
                 id: '"details.dt.settings.schema_version"',
-                accessor: '"details.dt.settings.schema_version"',
-
-                alignment: 'left'
+                accessor: '[\"details.dt.settings.schema_version\"]',
+                minWidth: 130,
+                alignment: 'center',
             },
             {
                 header: 'Object ID',
                 id: '"details.dt.settings.object_id"',
-                accessor: '"details.dt.settings.object_id"',
+                accessor: '[\"details.dt.settings.object_id\"]',
+                minWidth: 250,
             },
             {
                 header: 'Object Summary',
                 id: '"details.dt.settings.object_summary"',
-                accessor: '"details.dt.settings.object_summary"',
+                accessor: '[\"details.dt.settings.object_summary\"]',
+                minWidth: 200,
             },
             {
                 header: 'Scope Type',
                 id: '"details.dt.settings.scope_type"',
-                accessor: '"details.dt.settings.scope_type"',
+                accessor: '[\"details.dt.settings.scope_type\"]',
                 minWidth: 150,
                 alignment: 'center',
                 cell: ({ value }) => {
@@ -218,37 +226,37 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Scope Name',
                 id: '"details.dt.settings.scope_name"',
-                accessor: '"details.dt.settings.scope_name"',
+                accessor: '[\"details.dt.settings.scope_name\"]',
                 minWidth: 400,
             },
             {
                 header: 'Scope Id',
                 id: '"details.dt.settings.scope_id"',
-                accessor: '"details.dt.settings.scope_id"',
+                accessor: '[\"details.dt.settings.scope_id\"]',
                 minWidth: 250,
             },
             {
                 header: 'JSON Before Changes',
                 id: '"details.json_before"',
-                accessor: '"details.json_before"',
+                accessor: '[\"details.json_before\"]',
                 minWidth: 150,
             },
             {
                 header: 'JSON After Changes',
                 id: '"details.json_after"',
-                accessor: '"details.json_after"',
+                accessor: '[\"details.json_after\"]',
                 minWidth: 150,
             },
             {
                 header: 'JSON Patch',
                 id: '"details.json_patch"',
-                accessor: '"details.json_patch"',
+                accessor: '[\"details.json_patch\"]',
                 minWidth: 150,
             },
             {
                 header: 'Position Changes',
                 id: '"details.position"',
-                accessor: '"details.position"',
+                accessor: '[\"details.position\"]',
                 minWidth: 150,
             },
 
@@ -260,13 +268,13 @@ const auditColumns: DataTableColumnDef<any>[] = [
         columns: [
             // {
             //     header: 'Client Id',
-            //     accessor: `"authentication.client.id"`,
+            //     accessor: '[\"authentication.client.id\"]',
             //     minWidth: 200,
             //     autoWidth: true,
             // },
             // {
             //     header: 'Grant Type',
-            //     accessor: `"authentication.grant.type"`,
+            //     accessor: '[\"authentication.grant.type\"]',
             //     minWidth: 100,
             //     autoWidth: true,
             //     alignment: 'center',
@@ -274,41 +282,42 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Auth Type',
                 id: `"authentication.type"`,
-                accessor: `"authentication.type"`,
-
+                accessor: '[\"authentication.type\"]',
+                minWidth: 120,
                 alignment: 'center',
             },
             {
                 header: 'DT Security Context',
                 id: `"dt.security_context"`,
-                accessor: `"dt.security_context"`,
+                accessor: '[\"dt.security_context\"]',
+                minWidth: 150,
             },
             // 35ba9499-f87c-4047-962c-14dc32e255e5
             {
                 header: 'User Id',
                 id: `"user.id"`,
-                accessor: `"user.id"`,
+                accessor: '[\"user.id\"]',
                 minWidth: 150,
             },
             // Wolfgang Amadeus Mozart
             {
                 header: 'User Name',
                 id: `"user.name"`,
-                accessor: `"user.name"`,
+                accessor: '[\"user.name\"]',
                 minWidth: 150,
             },
             // DYNATRACE; CUSTOMER; PARTNER
             {
                 header: 'User Organization',
                 id: `"user.organization"`,
-                accessor: `"user.organization"`,
+                accessor: '[\"user.organization\"]',
                 minWidth: 150,
             },
             {
                 header: 'Authentication Token',
                 id: `"authentication.token"`,
-                accessor: `"authentication.token"`,
-                minWidth: 150,
+                accessor: '[\"authentication.token\"]',
+                minWidth: 180,
             },
         ]
     },
@@ -495,9 +504,10 @@ export const SettingsLogs = () => {
         setColumnVisibility2(columnVisibility2);
     }
 
-    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable' }>(
+    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable'; verticalAlignment: 'center' }>(
         () => ({
             rowDensity: rowDensity as 'default' | 'condensed' | 'comfortable',
+            verticalAlignment: 'center',
         }),
         [rowDensity]
     );
@@ -527,7 +537,7 @@ export const SettingsLogs = () => {
         };
     }
 
-    const clearFilters = (e) => {
+    const clearFilters = (e: string | number | React.MouseEvent) => {
         if (e == "") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
@@ -568,7 +578,9 @@ export const SettingsLogs = () => {
             setLogCount(filteredLogs.length.toString());
             return;
         }
-        e.preventDefault();
+        if (typeof e === 'object' && 'preventDefault' in e) {
+            e.preventDefault();
+        }
         setSelectedFilterType('')
         setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters([]);
@@ -577,7 +589,7 @@ export const SettingsLogs = () => {
         return;
     }
 
-    const getAuditLogs = async (timeFrame) => {
+    const getAuditLogs = async (timeFrame: Timeframe | null) => {
         setLoading(true);
         const apiAuditLogs = await functions.call('get-audit-logs', { data: timeFrame }).then(response => response.json());
 
@@ -587,22 +599,22 @@ export const SettingsLogs = () => {
         setLogCount(apiAuditLogs.result.records?.length);
         setLoading(false);
 
-        const eventTypes = apiAuditLogs.result.records.map(log => log["event.type"].toUpperCase());
+        const eventTypes = apiAuditLogs.result.records.map((log: Record<string, string>) => log["event.type"].toUpperCase());
         const uniqueEventTypes = new Set(eventTypes);
         const uniqueEventTypesArray = [...uniqueEventTypes];
         setEventTypes(uniqueEventTypesArray);
 
-        const scopeTypes = apiAuditLogs.result.records.map(log => log["details.dt.settings.scope_type"].toUpperCase());
+        const scopeTypes = apiAuditLogs.result.records.map((log: Record<string, string>) => log["details.dt.settings.scope_type"].toUpperCase());
         const uniqueScopeTypes = new Set(scopeTypes);
         const uniqueScopeTypesArray = [...uniqueScopeTypes];
         setScopeTypes(uniqueScopeTypesArray);
 
-        const schemaIdss = apiAuditLogs.result.records.map(log => log["details.dt.settings.schema_id"]);
+        const schemaIdss = apiAuditLogs.result.records.map((log: Record<string, string>) => log["details.dt.settings.schema_id"]);
         const uniqueSchema = new Set(schemaIdss);
         const schemaArray = [...uniqueSchema];
         setschemaIds(schemaArray);
 
-        const userOrgTypes = apiAuditLogs.result.records.map(log => log["user.organization"]);
+        const userOrgTypes = apiAuditLogs.result.records.map((log: Record<string, string>) => log["user.organization"]);
         const userOrgSchema = new Set(userOrgTypes);
         const userOrgArray = ["ALL", ...userOrgSchema];
         setUserOrgs(userOrgArray);
@@ -674,10 +686,10 @@ export const SettingsLogs = () => {
         }
     }, [timeFrame])
 
-    const handleEventTypeClick = (e) => {
+    const handleEventTypeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-
-        if (e.target.innerText == "ALL") {
+        const target = e.target as HTMLButtonElement;
+        if (target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
@@ -685,17 +697,18 @@ export const SettingsLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = useThese?.filter(log => log["event.type"].toLowerCase() === target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
+        setSelectedFilters([target.innerText]);
         setSelectedFilterType('Event Type')
         setLogCount(filteredLogs.length.toString());
 
     }
 
-    const handleScopeTypeClick = (e) => {
+    const handleScopeTypeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        if (e.target.innerText == "ALL") {
+        const target = e.target as HTMLButtonElement;
+        if (target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
@@ -703,16 +716,17 @@ export const SettingsLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["details.dt.settings.scope_type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = useThese?.filter(log => log["details.dt.settings.scope_type"].toLowerCase() === target.innerText.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
+        setSelectedFilters([target.innerText]);
         setSelectedFilterType('Scope Type')
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleOrgTypeClick = (e) => {
+    const handleOrgTypeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        if (e.target.innerText == "ALL") {
+        const target = e.target as HTMLButtonElement;
+        if (target.innerText == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
@@ -720,14 +734,14 @@ export const SettingsLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["user.organization"] === e.target.innerText);
+        const filteredLogs = useThese?.filter(log => log["user.organization"] === target.innerText);
         setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
+        setSelectedFilters([target.innerText]);
         setSelectedFilterType('User Organization')
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleSelectSchema = (e) => {
+    const handleSelectSchema = (e: string[]) => {
         setSelectedSchemas(e);
         if (e.length == 0) {
             setSelectedFilterType('')
@@ -776,7 +790,7 @@ export const SettingsLogs = () => {
                             {eventTypes.sort().map((scope, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[scope.toUpperCase()]}
+                                        {iconMap[scope.toUpperCase() as keyof typeof iconMap]}
                                         <Button onClick={handleEventTypeClick} key={index}>{scope.toUpperCase()}</Button>
                                     </Flex>
                                 )
@@ -793,7 +807,7 @@ export const SettingsLogs = () => {
                             {scopeTypes.sort().map((scope, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[scope.toUpperCase()]}
+                                        {iconMap[scope.toUpperCase() as keyof typeof iconMap]}
                                         <Button onClick={handleScopeTypeClick} key={index}>{scope.toUpperCase()}</Button>
                                     </Flex>
                                 )
@@ -806,7 +820,7 @@ export const SettingsLogs = () => {
                             {userOrgs?.sort().map((org, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[org?.toUpperCase()]}
+                                        {iconMap[org?.toUpperCase() as keyof typeof iconMap]}
                                         <Button onClick={handleOrgTypeClick} key={index}>{org?.toUpperCase()}</Button>
                                     </Flex>
                                 )
@@ -1031,7 +1045,7 @@ export const SettingsLogs = () => {
                         </FormField>
 
                         {/* Custom Action - Clear Filters */}
-                        <Button color={'neutral'} width={'content'} onClick={clearFilters}>
+                        <Button color={'neutral'} width={'content'} onClick={(e) => clearFilters(e)}>
                             <Button.Prefix>
                                 <FilterOutIcon />
                             </Button.Prefix>

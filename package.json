@@ -1,6 +1,6 @@
 {
   "name": "audit-logs-viewer",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Review the audit logs of this environment.",
   "scripts": {
     "build": "dt-app build",
@@ -31,7 +31,9 @@
     "@dynatrace/strato-components-preview": "3.2.1",
     "@dynatrace/strato-icons": "^2.1.1",
     "@microlink/react-json-view": "^1.23.0",
+    "@types/diff": "^7.0.2",
     "deep-diff": "^1.0.2",
+    "diff": "^9.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intl": "6.6.2",
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "@microsoft/eslint-plugin-sdl": "^0.2.0",
+    "@types/deep-diff": "^1.0.5",
     "@types/jest": "^29.5.6",
     "@types/node": "^16.11.34",
     "@types/react": "^18.2.63",

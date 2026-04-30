@@ -2,11 +2,15 @@ import React from "react";
 import { Button, Flex, Surface } from "@dynatrace/strato-components-preview";
 import { BlockIcon, ConnectorIcon, DeleteIcon, EditIcon, LoginIcon, LogoutIcon, PlusIcon, ResetIcon } from '@dynatrace/strato-icons';
 
-export const EventTypeFilters = ({handleEventTypeClick}) => {
+interface EventTypeFiltersProps {
+  handleEventTypeClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+export const EventTypeFilters = ({ handleEventTypeClick }: EventTypeFiltersProps) => {
 
     return (
         <Flex flexDirection='column'>
-            <h3 style={{ margin: 5 }}>Event Type Filters</h3>
+            <h3 style={{ margin: 5 }}>Event Types</h3>
             <Surface padding={16}>
                 <Flex flexDirection='column' gap={2}>
                     <Flex justifyContent='flex-start' alignItems='center'>

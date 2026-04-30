@@ -1,309 +1,210 @@
 import React from "react";
 import { Chip, Flex, Grid, Surface, TitleBar } from "@dynatrace/strato-components-preview";
-import { BugReportIcon, CodeIcon, ContainerIcon, DesktopIcon, LockIcon, ManualIcon, OneAgentSignetIcon } from '@dynatrace/strato-icons';
-import Colors from '@dynatrace/strato-design-tokens/colors';
-import { DeepDiff } from 'deep-diff'; // (npm package)
-import ReactJson from '@microlink/react-json-view'
+import { Text } from "@dynatrace/strato-components/typography";
+import { Divider } from "@dynatrace/strato-components/layouts";
+import {
+    BugReportIcon,
+    CodeIcon,
+    ContainerIcon,
+    DesktopIcon,
+    LockIcon,
+    ManualIcon,
+    OneAgentSignetIcon,
+} from '@dynatrace/strato-icons';
+import DeepDiff from 'deep-diff';
+import ReactJson from '@microlink/react-json-view';
+import { diffLines } from 'diff';
 
-const restrictedJsonPaths = [
-    'metadata', // Cluster versions being different is usually not a problem.
-    'nextPageKey', // V2 APIs sometimes return this value. (FFS!)
-    'nextPageKeys', // V2 APIs also sometimes return it with an 's'. (Again, FFS!)
-    'pageSize', // V2 APIs return pageSize with the data.
-    'applicationIdentifier', // Mobile apps use this instead of an entityId. Yay.
-    'timestamp'
-];
+const CATEGORY_ICONS: Record<string, React.ComponentType<any>> = {
+    ACTIVE_GATE: ContainerIcon,
+    AGENT: OneAgentSignetIcon,
+    CONFIG: CodeIcon,
+    DEBUG_UI: BugReportIcon,
+    MANUAL_TAGGING_SERVICE: ManualIcon,
+    TOKEN: LockIcon,
+    WEB_UI: DesktopIcon,
+};
 
-function getJsonDiff(dataA, dataB) {
-    let diffCount = 0;
-    const differences = DeepDiff.diff(dataA, dataB);
-    console.log(differences)
-    for (let i = 0; differences && i < differences?.length; i++) {
-        let diffPath = differences[i]?.path?.join('/');
+const EVENT_TYPE_COLORS: Record<string, 'success' | 'critical' | 'warning' | 'neutral' | 'primary'> = {
+    CREATE: 'success',
+    DELETE: 'critical',
+    UPDATE: 'warning',
+    NO_CHANGE: 'neutral',
+};
 
-        if (!diffPath?.(new RegExp(`(^${restrictedJsonPaths.join('|')}$)`, 'i'))) diffCount++;
-    }
-    return diffCount;
+function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+    if (value == null || value === '') return null;
+    return (
+        <div>
+            <Chip style={{ maxWidth: '100%', overflowX: 'auto' }}>
+                <Chip.Key>{label}</Chip.Key>
+                {value}
+            </Chip>
+        </div>
+    );
 }
 
-export const IndividualLog = ({ log }) => {
+function DiffViewer({ oldObj, newObj, side }: { oldObj: any; newObj: any; side: 'old' | 'new' }) {
+    const oldStr = JSON.stringify(oldObj, null, 2) ?? '';
+    const newStr = JSON.stringify(newObj, null, 2) ?? '';
+    const parts = diffLines(oldStr, newStr);
 
-    var icon;
-
-
-    switch (log.category) {
-        case 'ACTIVE_GATE':
-            icon = <ContainerIcon size="large" style={{ width: '40px', height: '40px' }} />;
-            break;
-        case 'AGENT':
-            icon = <OneAgentSignetIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
-        case 'CONFIG':
-            icon = <CodeIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
-        case 'DEBUG_UI':
-            icon = <BugReportIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
-        case 'MANUAL_TAGGING_SERVICE':
-            icon = <ManualIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
-        case 'TOKEN':
-            icon = <LockIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
-        case 'WEB_UI':
-            icon = <DesktopIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
-        default:
-            icon = <DesktopIcon size="large" style={{ width: '40px', height: '40px' }} />
-            break;
+    const lines: { text: string; highlight: 'removed' | 'added' | null }[] = [];
+    for (const part of parts) {
+        const partLines = part.value.split('\n');
+        if (partLines[partLines.length - 1] === '') partLines.pop();
+        for (const text of partLines) {
+            if (part.added) {
+                if (side === 'new') lines.push({ text, highlight: 'added' });
+            } else if (part.removed) {
+                if (side === 'old') lines.push({ text, highlight: 'removed' });
+            } else {
+                lines.push({ text, highlight: null });
+            }
+        }
     }
 
-    // if (log.category == 'ACTIVE_GATE') {
-    //     icon = <ContainerIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
-    // if (log.category == 'AGENT') {
-    //     icon = <OneAgentSignetIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
-    // if (log.category == 'CONFIG') {
-    //     icon = <CodeIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
-    // if (log.category == 'DEBUG_UI') {
-    //     icon = <BugReportIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
-    // if (log.category == 'MANUAL_TAGGING_SERVICE') {
-    //     icon = <ManualIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
-    // if (log.category == 'TOKEN') {
-    //     icon = <LockIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
-    // if (log.category == 'WEB_UI') {
-    //     icon = <DesktopIcon size="large" style={{ width: '40px', height: '40px' }} />
-    // }
+    return (
+        <pre style={{ fontFamily: 'monospace', fontSize: '13px', lineHeight: '1.5', overflowX: 'auto', margin: 0, padding: '8px 0' }}>
+            {lines.map((line, i) => (
+                <div
+                    key={i}
+                    style={{
+                        backgroundColor: line.highlight === 'removed' ? 'rgba(255,70,70,0.15)' : line.highlight === 'added' ? 'rgba(40,200,80,0.15)' : 'transparent',
+                        borderLeft: line.highlight === 'removed' ? '3px solid rgba(255,70,70,0.7)' : line.highlight === 'added' ? '3px solid rgba(40,200,80,0.7)' : '3px solid transparent',
+                        paddingLeft: '8px',
+                        paddingRight: '8px',
+                        whiteSpace: 'pre',
+                    }}
+                >
+                    {line.text || ' '}
+                </div>
+            ))}
+        </pre>
+    );
+}
 
-    let bgColor;
-    let textColor;
-    switch (log["event.type"]) {
-        case 'CREATE':
-            bgColor = Colors.Background.Container.Success.Accent;
-            break;
-        case 'DELETE':
-            bgColor = Colors.Background.Container.Critical.Accent;
-            break;
-        case 'NO_CHANGE':
-            bgColor = Colors.Background.Container.Success.Emphasized;
-            break;
-        // case 'LOGIN':
-        //     bgColor = Colors.Background.Container.Success.Emphasized;
-        //     break;
-        // case 'LOGOUT':
-        //     bgColor = Colors.Background.Container.Neutral.Accent;
-        //     break;
-
-        // case 'REMOTE_CONFIGURATION_MANAGEMENT':
-        //     bgColor = Colors.Background.Container.Success.Default;
-        //     break;
-        // case 'REVOKE':
-        //     bgColor = Colors.Background.Container.Neutral.Accent;
-        //     break;
-        // case 'TAG_ADD':
-        //     bgColor = Colors.Background.Container.Success.Accent;
-        //     break;
-        // case 'TAG_REMOVE':
-        //     bgColor = Colors.Background.Container.Critical.Accent;
-        //     break;
-        // case 'TAG_UPDATE':
-        //     bgColor = Colors.Background.Container.Warning.Accent;
-        //     break;
-        case 'UPDATE':
-            bgColor = Colors.Background.Container.Warning.Accent;
-            textColor = Colors.Text.Primary.OnAccent.Default;
-            break;
-        default:
-            bgColor = Colors.Background.Container.Primary.Accent;
-            break;
-    }
-
-
+export const IndividualLog = ({ log }: { log: any }) => {
+    const IconComponent = CATEGORY_ICONS[log.category] ?? DesktopIcon;
+    const chipColor = EVENT_TYPE_COLORS[log['event.type']] ?? 'primary';
     const readableTime = new Date(log.timestamp).toLocaleString();
-
-
+    const isSettings = log["event.provider"] === "SETTINGS";
 
     const Diff = DeepDiff(log['details.json_before'], log['details.json_after']);
-    console.log(Diff)
-    if (Diff?.length > 0 && Diff[0].kind === "E") {
-        const jsonDiff = getJsonDiff(Diff[0].lhs, Diff[0].rhs)
-        console.log(jsonDiff)
-    }
+    const hasDiff = Diff != null && Diff.length > 0;
+    const firstDiff = hasDiff ? Diff[0] : null;
 
-    const kindMap = {
-        "D": "DELETE",
-        "E": "EDIT",
-        "N": "NEW",
-        "A": "ARRAY"
-    }
-
-    console.log(log)
-    console.log(Diff)
     return (
         <Surface>
-            {/* Settings API Logs */}
-            {log["event.provider"] === "SETTINGS" && <Grid gridTemplateColumns="1fr 1fr 1fr">
-                <Flex gridColumn={'1/4'} justifyContent="center">
-                    <h1 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0, margin: 0, backgroundColor: bgColor, color: textColor, width: '100%' }}>
-                        Event Type: {log['event.type']}
-                        <div>{readableTime}</div>
-                    </h1>
-                </Flex>
-                <Grid >
-                    <TitleBar>
-                        <TitleBar.Title>
-                            Audit Information
-                        </TitleBar.Title>
-                    </TitleBar>
-                    {/* <div style={{ color: textColor, background: bgColor, padding: '5px', maxWidth: 250 }}>Event Type: {log['event.type']}</div>
-                    <div>{readableTime}</div> */}
-                    <div><Chip style={{ maxWidth: '1fr' }}><Chip.Key>Log Id</Chip.Key>{log['event.id']}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr' }}><Chip.Key>Entity Id</Chip.Key>{log['event.id']}</Chip></div>
-                    <div><Chip><Chip.Key>Source</Chip.Key>{log['details.source']}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Resource</Chip.Key>{log['resource']}</Chip></div>
-                    <div><Chip><Chip.Key>Status</Chip.Key>{log['event.outcome']}</Chip></div>
-                    <div><Chip><Chip.Key>Version</Chip.Key>{log['event.version']}</Chip></div>
-                    <div><Chip><Chip.Key>Provider</Chip.Key>{log['event.provider']}</Chip></div>
-                    <div><Chip><Chip.Key>Origin Address</Chip.Key>{log['origin.address']}</Chip></div>
-                    <div><Chip><Chip.Key>Origin Session</Chip.Key>{log['origin.session']}</Chip></div>
-                    <div><Chip><Chip.Key>Origin X-Forwarded-For</Chip.Key>{log['origin.x_forwarded_for']}</Chip></div>
-                </Grid>
+            {/* Header */}
+            <Flex
+                alignItems="center"
+                gap={12}
+                style={{ padding: '14px 20px', borderBottom: '1px solid var(--dt-colors-border-neutral-default)' }}
+            >
+                <Chip color={chipColor} variant="accent">
+                    <Chip.Prefix><IconComponent size="small" /></Chip.Prefix>
+                    {log['event.type']}
+                </Chip>
+                {log['resource'] && (
+                    <Text style={{ fontWeight: 500 }}>{log['resource']}</Text>
+                )}
+                <Flex flex={1} />
+                <Text color="text-secondary">{readableTime}</Text>
+            </Flex>
+
+            {/* Info sections */}
+            <Grid gridTemplateColumns={isSettings ? "1fr 1fr 1fr" : "1fr 1fr"} style={{ padding: '0 8px' }}>
                 <Grid>
                     <TitleBar>
-                        <TitleBar.Title>
-                            Settings Information
-                        </TitleBar.Title>
+                        <TitleBar.Title>Audit Information</TitleBar.Title>
                     </TitleBar>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Schema Id</Chip.Key>{log["details.dt.settings.schema_id"]}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Schema Version</Chip.Key>{log["details.dt.settings.schema_version"]}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Object Id</Chip.Key>{log["details.dt.settings.object_id"]}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Object Summary</Chip.Key>{log["details.dt.settings.object_summary"]}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Scope Type</Chip.Key>{log["details.dt.settings.scope_type"]}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Scope Name</Chip.Key>{log["details.dt.settings.scope_name"]}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Settings Scope Id</Chip.Key>{log["details.dt.settings.scope_id"]}</Chip></div>
+                    <InfoField label="Log Id" value={log['event.id']} />
+                    <InfoField label="Source" value={log['details.source']} />
+                    <InfoField label="Resource" value={log['resource']} />
+                    <InfoField label="Status" value={log['event.outcome']} />
+                    <InfoField label="Version" value={log['event.version']} />
+                    <InfoField label="Provider" value={log['event.provider']} />
+                    {!isSettings && <InfoField label="App Id" value={log['app.id']} />}
+                    <InfoField label="Origin Address" value={log['origin.address']} />
+                    <InfoField label="Origin Session" value={log['origin.session']} />
+                    <InfoField label="Origin X-Forwarded-For" value={log['origin.x_forwarded_for']} />
                 </Grid>
+
+                {isSettings && (
+                    <Grid>
+                        <TitleBar>
+                            <TitleBar.Title>Settings Information</TitleBar.Title>
+                        </TitleBar>
+                        <InfoField label="Schema Id" value={log["details.dt.settings.schema_id"]} />
+                        <InfoField label="Schema Version" value={log["details.dt.settings.schema_version"]} />
+                        <InfoField label="Object Id" value={log["details.dt.settings.object_id"]} />
+                        <InfoField label="Object Summary" value={log["details.dt.settings.object_summary"]} />
+                        <InfoField label="Scope Type" value={log["details.dt.settings.scope_type"]} />
+                        <InfoField label="Scope Name" value={log["details.dt.settings.scope_name"]} />
+                        <InfoField label="Scope Id" value={log["details.dt.settings.scope_id"]} />
+                    </Grid>
+                )}
+
                 <Grid>
                     <TitleBar>
-                        <TitleBar.Title>
-                            Auth Information
-                        </TitleBar.Title>
+                        <TitleBar.Title>Auth Information</TitleBar.Title>
                     </TitleBar>
-                    <div><Chip><Chip.Key>Authentication Type</Chip.Key>{log["authentication.type"]}</Chip></div>
-                    <div><Chip><Chip.Key>Authentication Token</Chip.Key>{log["authentication.token"]}</Chip></div>
-                    <div><Chip><Chip.Key>DT Security Context</Chip.Key>{log["dt.security_context"]}</Chip></div>
-                    <div><Chip><Chip.Key>User ID</Chip.Key>{log['user.id']}</Chip></div>
-                    <div><Chip><Chip.Key>User Name</Chip.Key>{log['user.name']}</Chip></div>
-                    <div><Chip><Chip.Key>User Organization</Chip.Key>{log['user.organization']}</Chip></div>
+                    {!isSettings && <InfoField label="Client Id" value={log["authentication.client.id"]} />}
+                    {!isSettings && <InfoField label="Grant Type" value={log["authentication.grant.type"]} />}
+                    <InfoField label="Authentication Type" value={log["authentication.type"]} />
+                    <InfoField label="Authentication Token" value={log["authentication.token"]} />
+                    <InfoField label="DT Security Context" value={log["dt.security_context"]} />
+                    <InfoField label="User ID" value={log['user.id']} />
+                    <InfoField label="User Name" value={log['user.name']} />
+                    <InfoField label="User Organization" value={log['user.organization']} />
                 </Grid>
+            </Grid>
 
-                <Grid gridColumn={'1/4'}>
-                    {Diff?.length > 0 && (log['event.type'] !== "CREATE" && log['event.type'] !== "NO_CHANGE") &&
-                        <div>
+            {/* Diff sections */}
+            {hasDiff && (
+                <Grid style={{ padding: '0 8px' }}>
+                    {log['event.type'] !== "CREATE" && log['event.type'] !== "NO_CHANGE" && log['details.json_patch'] != null && (
+                        <>
+                            <Divider />
                             <TitleBar>
-                                <TitleBar.Title>
-                                    Changes:
-                                </TitleBar.Title>
+                                <TitleBar.Title>Changes</TitleBar.Title>
                             </TitleBar>
-                            <ReactJson enableClipboard={false} displayDataTypes={false} theme={'harmonic'} defaultValue={{}} src={log['details.json_patch'] == null ? {} : JSON.parse(log['details.json_patch'])} />
-                        </div>
-                    }
+                            <ReactJson
+                                enableClipboard={false}
+                                displayDataTypes={false}
+                                theme="harmonic"
+                                defaultValue={{}}
+                                src={JSON.parse(log['details.json_patch'])}
+                            />
+                        </>
+                    )}
 
-                    {Diff?.length > 0 &&
-                        <Grid width={'100%'} gridTemplateColumns={'1fr 1fr'}>
-                            <TitleBar>
-                                <TitleBar.Title>
-                                    Previous Value:
-                                </TitleBar.Title>
-                            </TitleBar>
-                            <TitleBar>
-                                <TitleBar.Title>
-                                    New Value:
-                                </TitleBar.Title>
-                            </TitleBar>
-                            <ReactJson enableClipboard={false} displayDataTypes={false} theme={'harmonic'} defaultValue={{}} src={Diff[0].kind == "N" ? {} : JSON.parse(Diff[0].lhs)} />
-                            <ReactJson enableClipboard={false} displayDataTypes={false} theme={'harmonic'} defaultValue={{}} src={Diff[0].kind == "D" ? {} : JSON.parse(Diff[0].rhs)} />
-                        </Grid>
-                    }
+                    {firstDiff && (
+                        <>
+                            <Divider />
+                            <Grid gridTemplateColumns="1fr 1fr">
+                                <TitleBar>
+                                    <TitleBar.Title>Previous Value</TitleBar.Title>
+                                </TitleBar>
+                                <TitleBar>
+                                    <TitleBar.Title>New Value</TitleBar.Title>
+                                </TitleBar>
+                                <DiffViewer
+                                    oldObj={firstDiff.kind === "N" ? {} : "lhs" in firstDiff ? JSON.parse(firstDiff.lhs) : {}}
+                                    newObj={firstDiff.kind === "D" ? {} : "rhs" in firstDiff ? JSON.parse(firstDiff.rhs) : {}}
+                                    side="old"
+                                />
+                                <DiffViewer
+                                    oldObj={firstDiff.kind === "N" ? {} : "lhs" in firstDiff ? JSON.parse(firstDiff.lhs) : {}}
+                                    newObj={firstDiff.kind === "D" ? {} : "rhs" in firstDiff ? JSON.parse(firstDiff.rhs) : {}}
+                                    side="new"
+                                />
+                            </Grid>
+                        </>
+                    )}
                 </Grid>
-            </Grid>}
-            {log["event.provider"] !== "SETTINGS" && <Grid gridTemplateColumns="1fr 1fr">
-                <Flex gridColumn={'1/4'} justifyContent="center">
-                    <h1 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0, margin: 0, backgroundColor: bgColor, color: textColor, width: '100%' }}>
-                        Event Type: {log['event.type']}
-                        <div>{readableTime}</div>
-                    </h1>
-                </Flex>
-                <Grid >
-                    <TitleBar>
-                        <TitleBar.Title>
-                            Audit Information
-                        </TitleBar.Title>
-                    </TitleBar>
-                    {/* <div style={{ color: textColor, background: bgColor, padding: '5px', maxWidth: 250 }}>Event Type: {log['event.type']}</div>
-                    <div>{readableTime}</div> */}
-                    <div><Chip style={{ maxWidth: '1fr' }}><Chip.Key>Log Id</Chip.Key>{log['event.id']}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr' }}><Chip.Key>Entity Id</Chip.Key>{log['event.id']}</Chip></div>
-                    <div><Chip><Chip.Key>Source</Chip.Key>{log['details.source']}</Chip></div>
-                    <div><Chip style={{ maxWidth: '1fr', overflowX: 'scroll' }}><Chip.Key>Resource</Chip.Key>{log['resource']}</Chip></div>
-                    <div><Chip><Chip.Key>Status</Chip.Key>{log['event.outcome']}</Chip></div>
-                    <div><Chip><Chip.Key>Version</Chip.Key>{log['event.version']}</Chip></div>
-                    <div><Chip><Chip.Key>Provider</Chip.Key>{log['event.provider']}</Chip></div>
-                    <div><Chip><Chip.Key>App Id</Chip.Key>{log['app.id']}</Chip></div>
-                    <div><Chip><Chip.Key>Origin Address</Chip.Key>{log['origin.address']}</Chip></div>
-                    <div><Chip><Chip.Key>Origin Session</Chip.Key>{log['origin.session']}</Chip></div>
-                    <div><Chip><Chip.Key>Origin X-Forwarded-For</Chip.Key>{log['origin.x_forwarded_for']}</Chip></div>
-                </Grid>
-                <Grid>
-                    <TitleBar>
-                        <TitleBar.Title>
-                            Auth Information
-                        </TitleBar.Title>
-                    </TitleBar>
-                    <div><Chip><Chip.Key>Client Id</Chip.Key>{log["authentication.client.id"]}</Chip></div>
-                    <div><Chip><Chip.Key>Grant Type</Chip.Key>{log["authentication.grant.type"]}</Chip></div>
-                    <div><Chip><Chip.Key>Authentication Type</Chip.Key>{log["authentication.type"]}</Chip></div>
-                    <div><Chip><Chip.Key>Authentication Token</Chip.Key>{log["authentication.token"]}</Chip></div>
-                    <div><Chip><Chip.Key>DT Security Context</Chip.Key>{log["dt.security_context"]}</Chip></div>
-                    <div><Chip><Chip.Key>User ID</Chip.Key>{log['user.id']}</Chip></div>
-                    <div><Chip><Chip.Key>User Name</Chip.Key>{log['user.name']}</Chip></div>
-                    <div><Chip><Chip.Key>User Organization</Chip.Key>{log['user.organization']}</Chip></div>
-                </Grid>
-
-                <Grid gridColumn={'1/4'}>
-                    {Diff?.length > 0 && (log['event.type'] !== "CREATE" && log['event.type'] !== "NO_CHANGE") &&
-                        <div>
-                            <TitleBar>
-                                <TitleBar.Title>
-                                    Changes:
-                                </TitleBar.Title>
-                            </TitleBar>
-                            <ReactJson enableClipboard={false} displayDataTypes={false} theme={'harmonic'} defaultValue={{}} src={log['details.json_patch'] == null ? {} : JSON.parse(log['details.json_patch'])} />
-                        </div>
-                    }
-
-                    {Diff?.length > 0 &&
-                        <Grid width={'100%'} gridTemplateColumns={'1fr 1fr'}>
-                            <TitleBar>
-                                <TitleBar.Title>
-                                    Previous Value:
-                                </TitleBar.Title>
-                            </TitleBar>
-                            <TitleBar>
-                                <TitleBar.Title>
-                                    New Value:
-                                </TitleBar.Title>
-                            </TitleBar>
-                            <ReactJson enableClipboard={false} displayDataTypes={false} theme={'harmonic'} defaultValue={{}} src={Diff[0].kind == "N" ? {} : JSON.parse(Diff[0].lhs)} />
-                            <ReactJson enableClipboard={false} displayDataTypes={false} theme={'harmonic'} defaultValue={{}} src={Diff[0].kind == "D" ? {} : JSON.parse(Diff[0].rhs)} />
-                        </Grid>
-                    }
-                </Grid>
-            </Grid>}
-        </Surface >
+            )}
+        </Surface>
     );
 };

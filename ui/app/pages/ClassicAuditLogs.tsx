@@ -33,7 +33,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Event ID',
                 id: '"event.id"',
-                accessor: '"event.id"',
+                accessor: '[\"event.id\"]',
                 minWidth: 300,
 
 
@@ -41,7 +41,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Kind',
                 id: '"event.kind"',
-                accessor: '"event.kind"',
+                accessor: '[\"event.kind\"]',
                 minWidth: 120,
 
                 alignment: 'center',
@@ -49,7 +49,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Version',
                 id: '"event.version"',
-                accessor: '"event.version"',
+                accessor: '[\"event.version\"]',
                 minWidth: 100,
 
                 alignment: 'center',
@@ -57,7 +57,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Type',
                 id: '"event.type"',
-                accessor: '"event.type"',
+                accessor: '[\"event.type\"]',
                 minWidth: 120,
 
                 alignment: 'center',
@@ -65,7 +65,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Provider',
                 id: '"event.provider"',
-                accessor: '"event.provider"',
+                accessor: '[\"event.provider\"]',
                 minWidth: 140,
 
 
@@ -73,7 +73,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Outcome',
                 id: '"event.outcome"',
-                accessor: '"event.outcome"',
+                accessor: '[\"event.outcome\"]',
                 minWidth: 90,
 
                 alignment: 'center',
@@ -82,21 +82,21 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'DT Security Context',
                 id: '"dt.security_context"',
-                accessor: '"dt.security_context"',
+                accessor: '[\"dt.security_context\"]',
                 minWidth: 140,
 
             },
             {
                 header: 'Origin Type',
                 id: '"origin.type"',
-                accessor: '"origin.type"',
+                accessor: '[\"origin.type\"]',
                 minWidth: 120,
 
             },
             {
                 header: 'Origin Address',
                 id: '"origin.address"',
-                accessor: '"origin.address"',
+                accessor: '[\"origin.address\"]',
                 minWidth: 140,
 
 
@@ -118,7 +118,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Auth Type',
                 id: '"authentication.type"',
-                accessor: '"authentication.type"',
+                accessor: '[\"authentication.type\"]',
                 minWidth: 120,
 
                 alignment: 'center',
@@ -126,7 +126,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Auth Token (masked)',
                 id: '"authentication.token"',
-                accessor: '"authentication.token"',
+                accessor: '[\"authentication.token\"]',
                 minWidth: 180,
 
                 cell: ({ value }) => {
@@ -141,7 +141,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'User Id',
                 id: '"user.id"',
-                accessor: '"user.id"',
+                accessor: '[\"user.id\"]',
                 minWidth: 200,
 
 
@@ -149,7 +149,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'User Organization',
                 id: '"user.organization"',
-                accessor: '"user.organization"',
+                accessor: '[\"user.organization\"]',
                 minWidth: 140,
 
             },
@@ -341,9 +341,10 @@ export const ClassicAuditLogs = () => {
         setColumnVisibility2(columnVisibility2);
     }
 
-    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable' }>(
+    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable'; verticalAlignment: 'center' }>(
         () => ({
             rowDensity: rowDensity as 'default' | 'condensed' | 'comfortable',
+            verticalAlignment: 'center',
         }),
         [rowDensity]
     );

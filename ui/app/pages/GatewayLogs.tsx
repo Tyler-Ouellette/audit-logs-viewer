@@ -6,7 +6,7 @@ import { DataTable, TableActionsMenu, useFilteredData, } from '@dynatrace/strato
 import type { DataTableColumnDef } from '@dynatrace/strato-components-preview/tables';
 import Colors from '@dynatrace/strato-design-tokens/colors';
 import { Button, FilterBar, FilterItemValues, Flex, FormField, Grid, Select, Surface, TextInput, ToggleButtonGroup, Chip } from '@dynatrace/strato-components-preview';
-import { SyntheticMonitoringSignetIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon } from '@dynatrace/strato-icons';
+import { SyntheticMonitoringSignetIcon, FilterIcon, FilterOutIcon, FolderOpenIcon, LoginIcon, LogoutIcon, LockIcon, PlusIcon, RefreshIcon, ResetIcon, WorldmapIcon, ApplicationsIcon, LineChartIcon, HostsIcon, ServicesIcon, HttpIcon, CodeIcon, AccountIcon, AnalyticsIcon, DynatraceIcon, ContainerIcon, QueuesIcon, SettingIcon, NetworkIcon, NodeIcon, TechnologiesIcon, DeleteIcon, CodeOffIcon, EditIcon, ViewIcon, WarningIcon, AppsSignetIcon, AutomationsSignetIcon, BusinessAnalyticsSignetIcon, DavisAISignetIcon, PurePathSignetIcon, SiteReliabilitySignetIcon, CustomSolutionsSignetIcon, AppEngineSignetIcon, NotificationIcon } from '@dynatrace/strato-icons';
 import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
 import { TimeframeSelector } from '@dynatrace/strato-components-preview/filters';
@@ -31,7 +31,7 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Type',
                 id: `"event.type"`,
-                accessor: `"event.type"`,
+                accessor: '[\"event.type\"]',
                 // columnType: 'date',
                 minWidth: 125,
 
@@ -64,8 +64,8 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Outcome',
                 id: `"event.outcome"`,
-                accessor: `"event.outcome"`,
-
+                accessor: '[\"event.outcome\"]',
+                minWidth: 100,
                 alignment: 'center',
                 cell: ({ value }) => {
                     return value?.toUpperCase();
@@ -101,33 +101,39 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Version',
                 id: `"event.version"`,
-                accessor: `"event.version"`,
+                accessor: '[\"event.version\"]',
+                minWidth: 100,
                 alignment: 'center'
             },
             {
                 header: 'Provider',
                 id: '"event.provider"',
-                accessor: '"event.provider"',
+                accessor: '[\"event.provider\"]',
+                minWidth: 150,
             },
             {
                 header: 'App Id',
                 id: '"app.id"',
-                accessor: '"app.id"',
+                accessor: '[\"dt.app.id\"]',
+                minWidth: 200,
             },
             {
                 header: 'Origin Address',
                 id: '"origin.address"',
-                accessor: '"origin.address"',
+                accessor: '[\"origin.address\"]',
+                minWidth: 150,
             },
             {
                 header: 'Origin Session',
                 id: '"origin.session"',
-                accessor: '"origin.session"',
+                accessor: '[\"origin.session\"]',
+                minWidth: 300,
             },
             {
                 header: 'Origin X-Forwarded-For',
                 id: '"origin.x_forwarded_for"',
-                accessor: '"origin.x_forwarded_for"',
+                accessor: '[\"origin.x_forwarded_for\"]',
+                minWidth: 200,
             },
             {
                 header: 'Resource',
@@ -144,14 +150,14 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Client Id',
                 id: `"authentication.client.id"`,
-                accessor: `"authentication.client.id"`,
+                accessor: '[\"authentication.client.id\"]',
                 minWidth: 200,
 
             },
             {
                 header: 'Grant Type',
                 id: `"authentication.grant.type"`,
-                accessor: `"authentication.grant.type"`,
+                accessor: '[\"authentication.grant.type\"]',
                 minWidth: 100,
 
                 alignment: 'center',
@@ -159,34 +165,35 @@ const auditColumns: DataTableColumnDef<any>[] = [
             {
                 header: 'Auth Type',
                 id: `"authentication.type"`,
-                accessor: `"authentication.type"`,
-
+                accessor: '[\"authentication.type\"]',
+                minWidth: 120,
                 alignment: 'center',
             },
             {
                 header: 'DT Security Context',
                 id: `"dt.security_context"`,
-                accessor: `"dt.security_context"`,
+                accessor: '[\"dt.security_context\"]',
+                minWidth: 150,
             },
             // 35ba9499-f87c-4047-962c-14dc32e255e5
             {
                 header: 'User Id',
                 id: `"user.id"`,
-                accessor: `"user.id"`,
+                accessor: '[\"user.id\"]',
                 minWidth: 150,
             },
             // Wolfgang Amadeus Mozart
             // {
             //     header: 'User Name',
             //     id: `"user.name"`,
-            //     accessor: `"user.name"`,
+            //     accessor: '[\"user.name\"]',
             //     minWidth: 150,
             // },
             // DYNATRACE; CUSTOMER; PARTNER
             {
                 header: 'User Organization',
                 id: `"user.organization"`,
-                accessor: `"user.organization"`,
+                accessor: '[\"user.organization\"]',
                 minWidth: 150,
             }
         ]
@@ -278,6 +285,19 @@ export const GatewayLogs = () => {
 
     const auditData = useMemo(() => auditLogs, [auditLogs]);
 
+    const appIconMap: Record<string, React.ReactNode> = {
+        "dynatrace.appshell": <AppsSignetIcon />,
+        "dynatrace.automations": <AutomationsSignetIcon />,
+        "dynatrace.biz.carbon": <BusinessAnalyticsSignetIcon />,
+        "dynatrace.dashboards": <AnalyticsIcon />,
+        "dynatrace.davis.problems": <DavisAISignetIcon />,
+        "dynatrace.distributedtracing": <PurePathSignetIcon />,
+        "dynatrace.launcher": <AppEngineSignetIcon />,
+        "dynatrace.site.reliability.guardian": <SiteReliabilitySignetIcon />,
+        "dynatrace.slack": <NotificationIcon />,
+        "local-dev-mode": <CustomSolutionsSignetIcon />,
+    };
+
     const iconMap = {
         "AG_GROUP": <NetworkIcon />,
         "AGENT": `<OneAgentSignetIcon />`,
@@ -297,6 +317,8 @@ export const GatewayLogs = () => {
         "HTTP_CHECK": <HttpIcon />,
         "INGEST_CONFIG": <SettingIcon />,
         "KUBERNETES_CLUSTER": <NodeIcon />,
+        "LOGIN": <LoginIcon />,
+        "LOGOUT": <LogoutIcon />,
         "MANUAL_TAGGING_SERVICE": `<ManualIcon />`,
         "METRIC": <LineChartIcon />,
         "NO_CHANGE": <CodeOffIcon />,
@@ -377,9 +399,10 @@ export const GatewayLogs = () => {
         setColumnVisibility2(columnVisibility2);
     }
 
-    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable' }>(
+    const tableVariant = useMemo<{ rowDensity: 'default' | 'condensed' | 'comfortable'; verticalAlignment: 'center' }>(
         () => ({
             rowDensity: rowDensity as 'default' | 'condensed' | 'comfortable',
+            verticalAlignment: 'center',
         }),
         [rowDensity]
     );
@@ -475,7 +498,7 @@ export const GatewayLogs = () => {
         setEventTypes(uniqueEventTypesArray);
 
 
-        const appIds = apiAuditLogs.result.records.map(log => log["app.id"]);
+        const appIds = apiAuditLogs.result.records.map(log => log["dt.app.id"]);
         const uniqueAppIds = new Set(appIds);
         const appArray = [...uniqueAppIds];
         setAppIds(appArray);
@@ -672,6 +695,7 @@ export const GatewayLogs = () => {
                             {appIds.sort().map((scope, index) => {
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
+                                        {appIconMap[scope]}
                                         <Button onClick={handleAppIdClick} key={index}>{scope}</Button>
                                     </Flex>
                                 )
@@ -901,7 +925,10 @@ export const GatewayLogs = () => {
                                     <Select.Filter />
                                     {appIds.filter((appId) => appId?.length > 0).map((appId, index) => {
                                         return (
-                                            <Select.Option key={index} value={appId}>{appId}</Select.Option>
+                                            <Select.Option key={index} value={appId}>
+                                            {appIconMap[appId] && <Select.Prefix>{appIconMap[appId]}</Select.Prefix>}
+                                            {appId}
+                                        </Select.Option>
                                         )
                                     })}
                                 </Select.Content>
