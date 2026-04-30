@@ -12,7 +12,24 @@ import { IndividualLog } from '../components/IndividualLog';
 import { TimeframeSelector } from '@dynatrace/strato-components-preview/filters';
 import type { Timeframe } from '@dynatrace/strato-components-preview/core';
 
-const auditColumns: DataTableColumnDef<any>[] = [
+type GatewayAuditLog = {
+    timestamp: string;
+    ["event.type"]?: string;
+    ["dt.app.id"]?: string;
+    ["app.id"]?: string;
+    ["user.organization"]?: string;
+    [key: string]: unknown;
+};
+
+type GatewayAuditLogsResponse = {
+    result: {
+        records: GatewayAuditLog[];
+    };
+};
+
+type ClearFiltersInput = '' | 'shift' | number | React.MouseEvent<Element>;
+
+const auditColumns: DataTableColumnDef<GatewayAuditLog>[] = [
     {
         header: 'Audit Information',
         id: 'auditInfo',
@@ -271,16 +288,16 @@ export const GatewayLogs = () => {
     const [lastSelectedDate, setLastSelectedDate] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [showSheet, setShowSheet] = useState<boolean>(false);
-    const [auditLogs, setAuditLogs] = useState<Array<any>>([]);
-    const [eventTypes, setEventTypes] = useState<Array<any>>([]);
-    const [appIds, setAppIds] = useState<Array<any>>([]);
-    const [userOrgs, setUserOrgs] = useState<Array<any>>([]);
-    const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
-    const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
-    const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
+    const [auditLogs, setAuditLogs] = useState<GatewayAuditLog[]>([]);
+    const [eventTypes, setEventTypes] = useState<string[]>([]);
+    const [appIds, setAppIds] = useState<string[]>([]);
+    const [userOrgs, setUserOrgs] = useState<string[]>([]);
+    const [oldestLogs, setOldestLogs] = useState<GatewayAuditLog[]>([]);
+    const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<GatewayAuditLog[]>([]);
+    const [selectedLogs, setSelectedLogs] = useState<GatewayAuditLog[]>([]);
     const [logCount, setLogCount] = useState<string>('');
-    const [selectedApps, setSelectedApps] = useState<Array<any>>([]);
-    const [selectedFilters, setSelectedFilters] = useState<Array<any>>([]);
+    const [selectedApps, setSelectedApps] = useState<string[]>([]);
+    const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
     const [selectedFilterType, setSelectedFilterType] = useState<string>('');
 
     const auditData = useMemo(() => auditLogs, [auditLogs]);
@@ -298,7 +315,7 @@ export const GatewayLogs = () => {
         "local-dev-mode": <CustomSolutionsSignetIcon />,
     };
 
-    const iconMap = {
+    const iconMap: Record<string, React.ReactNode> = {
         "AG_GROUP": <NetworkIcon />,
         "AGENT": `<OneAgentSignetIcon />`,
         "ALL": <ResetIcon />,
@@ -386,7 +403,7 @@ export const GatewayLogs = () => {
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
 
-    const columns = useMemo<DataTableColumnDef<any>[]>(() => auditColumns, []);
+    const columns = useMemo<DataTableColumnDef<GatewayAuditLog>[]>(() => auditColumns, []);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
@@ -432,7 +449,7 @@ export const GatewayLogs = () => {
         };
     }
 
-    const clearFilters = (e) => {
+    const clearFilters = (e: ClearFiltersInput) => {
         if (e == "") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
@@ -454,7 +471,7 @@ export const GatewayLogs = () => {
             }
 
             const useThese = [...currentTimeFrameLogs];
-            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
+            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"] ?? ''));
             setSelectedFilters(useThis);
             setSelectedApps(useThis);
             setAuditLogs(filteredLogs)
@@ -466,7 +483,7 @@ export const GatewayLogs = () => {
             useThis.splice(e, 1);
 
             const useThese = [...currentTimeFrameLogs];
-            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"]));
+            const filteredLogs = useThese?.filter(log => useThis.includes(log["app.id"] ?? ''));
             setSelectedFilters(useThis);
             setSelectedApps(useThis);
             setAuditLogs(filteredLogs)
@@ -482,35 +499,43 @@ export const GatewayLogs = () => {
         return;
     }
 
-    const getAuditLogs = async (timeFrame) => {
+    const getAuditLogs = async (timeFrame: Timeframe) => {
         setLoading(true);
-        const apiAuditLogs = await functions.call('get-audit-logs-gateway', { data: timeFrame }).then(response => response.json());
+        const apiAuditLogs: GatewayAuditLogsResponse = await functions.call('get-audit-logs-gateway', { data: timeFrame }).then(response => response.json());
 
         setCurrentTimeFrameLogs(apiAuditLogs.result.records);
         setAuditLogs(apiAuditLogs.result.records);
         setOldestLogs(apiAuditLogs.result.records);
-        setLogCount(apiAuditLogs.result.records?.length);
+        setLogCount(apiAuditLogs.result.records?.length.toString());
         setLoading(false);
 
-        const eventTypes = apiAuditLogs.result.records.map(log => log["event.type"]?.toUpperCase());
+        const eventTypes = apiAuditLogs.result.records
+            .map((log: GatewayAuditLog) => log["event.type"]?.toUpperCase())
+            .filter((value): value is string => Boolean(value));
         const uniqueEventTypes = new Set(eventTypes);
         const uniqueEventTypesArray = [...uniqueEventTypes];
         setEventTypes(uniqueEventTypesArray);
 
 
-        const appIds = apiAuditLogs.result.records.map(log => log["dt.app.id"]);
+        const appIds = apiAuditLogs.result.records
+            .map((log: GatewayAuditLog) => log["dt.app.id"])
+            .filter((value): value is string => Boolean(value));
         const uniqueAppIds = new Set(appIds);
         const appArray = [...uniqueAppIds];
         setAppIds(appArray);
 
-        const userOrgTypes = apiAuditLogs.result.records.map(log => log["user.organization"]);
+        const userOrgTypes = apiAuditLogs.result.records
+            .map((log: GatewayAuditLog) => log["user.organization"])
+            .filter((value): value is string => Boolean(value));
         const userOrgSchema = new Set(userOrgTypes);
         const userOrgArray = ["ALL", ...userOrgSchema];
         setUserOrgs(userOrgArray);
     }
 
     useEffect(() => {
-        getAuditLogs(timeFrame);
+        if (timeFrame) {
+            getAuditLogs(timeFrame);
+        }
     }, [])
 
     useEffect(() => {
@@ -575,10 +600,11 @@ export const GatewayLogs = () => {
         }
     }, [timeFrame])
 
-    const handleEventTypeClick = (e) => {
+    const handleEventTypeClick = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
+        const selectedValue = e.currentTarget.innerText;
 
-        if (e.target.innerText == "ALL") {
+        if (selectedValue == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
@@ -586,17 +612,18 @@ export const GatewayLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["event.type"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = useThese?.filter(log => (log["event.type"] ?? '').toLowerCase() === selectedValue.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
+        setSelectedFilters([selectedValue]);
         setSelectedFilterType('Event Type')
         setLogCount(filteredLogs.length.toString());
 
     }
 
-    const handleAppIdClick = (e) => {
+    const handleAppIdClick = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-        if (e.target.innerText == "ALL") {
+        const selectedValue = e.currentTarget.innerText;
+        if (selectedValue == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
@@ -604,16 +631,17 @@ export const GatewayLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["app.id"] === e.target.innerText.replace(/\s+/g, '_'));
+        const filteredLogs = useThese?.filter(log => (log["app.id"] ?? '') === selectedValue.replace(/\s+/g, '_'));
         setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
+        setSelectedFilters([selectedValue]);
         setSelectedFilterType('App Id')
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleOrgTypeClick = (e) => {
+    const handleOrgTypeClick = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-        if (e.target.innerText == "ALL") {
+        const selectedValue = e.currentTarget.innerText;
+        if (selectedValue == "ALL") {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
@@ -621,14 +649,14 @@ export const GatewayLogs = () => {
             return;
         }
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => log["user.organization"].toLowerCase() === e.target.innerText.replace(/\s+/g, '_').toLowerCase());
+        const filteredLogs = useThese?.filter(log => (log["user.organization"] ?? '').toLowerCase() === selectedValue.replace(/\s+/g, '_').toLowerCase());
         setAuditLogs(filteredLogs);
-        setSelectedFilters([e.target.innerText]);
+        setSelectedFilters([selectedValue]);
         setSelectedFilterType('User Organization')
         setLogCount(filteredLogs.length.toString());
     }
 
-    const handleSelectApp = (e) => {
+    const handleSelectApp = (e: string[]) => {
         setSelectedApps(e);
 
         if (e.length == 0) {
@@ -640,7 +668,7 @@ export const GatewayLogs = () => {
         }
 
         const useThese = [...currentTimeFrameLogs];
-        const filteredLogs = useThese?.filter(log => e.includes(log["app.id"]));
+        const filteredLogs = useThese?.filter(log => e.includes(log["app.id"] ?? ''));
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('App Id');
@@ -664,6 +692,10 @@ export const GatewayLogs = () => {
         await getAuditLogs(timeFrame);
     }
 
+    const handleClearFiltersClick = (e: React.MouseEvent<Element>) => {
+        clearFilters(e);
+    }
+
     return (
         <Page style={{ height: 'unset', maxHeight: 'unset' }}>
             <Page.Sidebar resizable={true} preferredWidth={300}>
@@ -676,10 +708,11 @@ export const GatewayLogs = () => {
                                 <Button onClick={handleEventTypeClick} key={'all'}>ALL</Button>
                             </Flex>
                             {eventTypes.sort().map((scope, index) => {
+                                        const scopeKey = scope?.toUpperCase();
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[scope?.toUpperCase()]}
-                                        <Button onClick={handleEventTypeClick} key={index}>{scope?.toUpperCase()}</Button>
+                                        {iconMap[scopeKey]}
+                                        <Button onClick={handleEventTypeClick} key={index}>{scopeKey}</Button>
                                     </Flex>
                                 )
                             })}
@@ -706,10 +739,11 @@ export const GatewayLogs = () => {
                     <Surface>
                         <Flex flexDirection='column'>
                             {userOrgs.sort().map((org, index) => {
+                                const orgKey = org?.toUpperCase();
                                 return (
                                     <Flex justifyContent='flex-start' alignItems='center' key={index}>
-                                        {iconMap[org?.toUpperCase()]}
-                                        <Button onClick={handleOrgTypeClick} key={index}>{org?.toUpperCase()}</Button>
+                                        {iconMap[orgKey]}
+                                        <Button onClick={handleOrgTypeClick} key={index}>{orgKey}</Button>
                                     </Flex>
                                 )
                             })}
@@ -801,9 +835,9 @@ export const GatewayLogs = () => {
                                     <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.eventType.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => String(log.eventType ?? '').toLowerCase() === String(cellValue ?? '').replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cellValue]);
+                                            setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Event Type');
                                             setLogCount(filteredLogs.length.toString());
 
@@ -825,9 +859,9 @@ export const GatewayLogs = () => {
                                     <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.category.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => String(log.category ?? '').toLowerCase() === String(cellValue ?? '').replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cellValue]);
+                                            setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Category');
                                             setLogCount(filteredLogs.length.toString());
                                         }}
@@ -847,9 +881,9 @@ export const GatewayLogs = () => {
                                     <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log.userType.toLowerCase() === (cellValue as string).replace(/\s+/g, '_').toLowerCase());
+                                            const filteredLogs = oldestLogs?.filter(log => String(log.userType ?? '').toLowerCase() === String(cellValue ?? '').replace(/\s+/g, '_').toLowerCase());
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cellValue]);
+                                            setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('User Type');
                                             setLogCount(filteredLogs.length.toString());
                                         }}
@@ -869,12 +903,12 @@ export const GatewayLogs = () => {
                                     <TableActionsMenu.Item
                                         onSelect={() => {
                                             /* trigger custom action */
-                                            const filteredLogs = oldestLogs?.filter(log => log["app.id"] === cellValue);
+                                            const filteredLogs = oldestLogs?.filter(log => log["app.id"] === String(cellValue ?? ''));
                                             setAuditLogs(filteredLogs);
-                                            setSelectedFilters([cellValue]);
+                                            setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('App Id');
                                             setLogCount(filteredLogs.length.toString());
-                                            setSelectedApps([cellValue]);
+                                            setSelectedApps([String(cellValue ?? '')]);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -936,7 +970,7 @@ export const GatewayLogs = () => {
                         </FormField>
 
                         {/* Custom Action - Clear Filters */}
-                        <Button color={'neutral'} width={'content'} onClick={clearFilters}>
+                        <Button color={'neutral'} width={'content'} onClick={handleClearFiltersClick}>
                             <Button.Prefix>
                                 <FilterOutIcon />
                             </Button.Prefix>
