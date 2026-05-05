@@ -22,6 +22,10 @@
       {
         "name": "environment-api:audit-logs:read",
         "comment": "Read old Audit Logs from API"
+      },
+      {
+        "name": "iam:users:read",
+        "comment": "Read user info (name, email) from IAM service"
       }
     ]
   }

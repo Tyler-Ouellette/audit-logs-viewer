@@ -11,6 +11,8 @@ import { Sheet } from '@dynatrace/strato-components-preview/overlays';
 import { IndividualLog } from '../components/IndividualLog';
 import { TimeframeSelector } from '@dynatrace/strato-components-preview/filters';
 import type { Timeframe } from '@dynatrace/strato-components-preview/core';
+import { useUserMap } from '../hooks/useUserMap';
+import { injectUserColumns, maskToken } from '../utils/auditUtils';
 
 const auditColumns: DataTableColumnDef<any>[] = [
     {
@@ -318,6 +320,9 @@ const auditColumns: DataTableColumnDef<any>[] = [
                 id: `"authentication.token"`,
                 accessor: '[\"authentication.token\"]',
                 minWidth: 180,
+                cell: ({ value }) => (
+                    <DataTable.DefaultCell>{maskToken(value as string | undefined)}</DataTable.DefaultCell>
+                ),
             },
         ]
     },
@@ -490,8 +495,9 @@ export const SettingsLogs = () => {
 
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
+    const userMap = useUserMap(auditLogs);
 
-    const columns = useMemo<DataTableColumnDef<any>[]>(() => auditColumns, []);
+    const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
