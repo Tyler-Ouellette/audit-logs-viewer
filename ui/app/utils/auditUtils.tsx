@@ -31,9 +31,11 @@ export function injectUserColumns(
             accessor: '["user.id"]',
             minWidth: 150,
             width: { type: 'auto', maxWidth: 300 },
-            cell: ({ value }) => {
+            cell: ({ value, row }: any) => {
                 const user = userMap.get(value as string);
-                const name = user ? [user.name, user.surname].filter(Boolean).join(' ') : '';
+                const name = user
+                    ? [user.name, user.surname].filter(Boolean).join(' ')
+                    : (row?.original?.['user.name'] as string | undefined) ?? '';
                 return <DataTable.DefaultCell>{name}</DataTable.DefaultCell>;
             },
         };

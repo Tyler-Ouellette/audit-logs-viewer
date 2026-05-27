@@ -13,7 +13,7 @@
     "info": "dt-app info",
     "help": "dt-app help",
     "lint": "eslint .",
-    "test:api": "jest --config=api/jest.config.js"
+    "test": "jest --config=ui/app/hooks/jest.config.js"
   },
   "engines": {
     "node": ">=16.13.0"

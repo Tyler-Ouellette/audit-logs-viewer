@@ -1,6 +1,6 @@
 import { subDays } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react'
-import { functions } from "@dynatrace-sdk/app-utils";
+import { useGatewayAuditLogs } from '../hooks/useGatewayAuditLogs';
 import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
 import { DataTable, TableActionsMenu, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
 import type { DataTableColumnDef } from '@dynatrace/strato-components-preview/tables';
@@ -414,6 +414,7 @@ export const GatewayLogs = () => {
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
     const userMap = useUserMap(auditLogs);
+    const fetchGatewayLogs = useGatewayAuditLogs();
 
     const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
@@ -513,30 +514,29 @@ export const GatewayLogs = () => {
 
     const getAuditLogs = async (timeFrame: Timeframe) => {
         setLoading(true);
-        const apiAuditLogs: GatewayAuditLogsResponse = await functions.call('get-audit-logs-gateway', { data: timeFrame }).then(response => response.json());
+        const records: GatewayAuditLog[] = await fetchGatewayLogs(timeFrame);
 
-        setCurrentTimeFrameLogs(apiAuditLogs.result.records);
-        setAuditLogs(apiAuditLogs.result.records);
-        setOldestLogs(apiAuditLogs.result.records);
-        setLogCount(apiAuditLogs.result.records?.length.toString());
+        setCurrentTimeFrameLogs(records);
+        setAuditLogs(records);
+        setOldestLogs(records);
+        setLogCount(records?.length.toString());
         setLoading(false);
 
-        const eventTypes = apiAuditLogs.result.records
+        const eventTypes = records
             .map((log: GatewayAuditLog) => log["event.type"]?.toUpperCase())
             .filter((value): value is string => Boolean(value));
         const uniqueEventTypes = new Set(eventTypes);
         const uniqueEventTypesArray = [...uniqueEventTypes];
         setEventTypes(uniqueEventTypesArray);
 
-
-        const appIds = apiAuditLogs.result.records
+        const appIds = records
             .map((log: GatewayAuditLog) => log["dt.app.id"])
             .filter((value): value is string => Boolean(value));
         const uniqueAppIds = new Set(appIds);
         const appArray = [...uniqueAppIds];
         setAppIds(appArray);
 
-        const userOrgTypes = apiAuditLogs.result.records
+        const userOrgTypes = records
             .map((log: GatewayAuditLog) => log["user.organization"])
             .filter((value): value is string => Boolean(value));
         const userOrgSchema = new Set(userOrgTypes);

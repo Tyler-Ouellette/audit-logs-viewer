@@ -160,10 +160,8 @@ export const IndividualLog = ({ log }: { log: any }) => {
                     <InfoField label="Authentication Token" value={log["authentication.token"]} />
                     <InfoField label="DT Security Context" value={log["dt.security_context"]} />
                     <InfoField label="User ID" value={log['user.id']} />
-                    {userInfo?.name && <InfoField label="First Name" value={userInfo.name} />}
-                    {userInfo?.surname && <InfoField label="Last Name" value={userInfo.surname} />}
+                    <InfoField label="User Name" value={[userInfo?.name, userInfo?.surname].filter(Boolean).join(' ') || log['user.name']} />
                     {userInfo?.email && <InfoField label="Email" value={userInfo.email} />}
-                    <InfoField label="User Name" value={log['user.name']} />
                     <InfoField label="User Organization" value={log['user.organization']} />
                 </Grid>
             </Grid>

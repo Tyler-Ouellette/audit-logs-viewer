@@ -1,6 +1,6 @@
 import { subDays } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react'
-import { functions } from "@dynatrace-sdk/app-utils";
+import { useSettingsAuditLogs } from '../hooks/useSettingsAuditLogs';
 import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
 import { DataTable, TableActionsMenu, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
 import type { DataTableColumnDef } from '@dynatrace/strato-components-preview/tables';
@@ -301,13 +301,6 @@ const auditColumns: DataTableColumnDef<any>[] = [
                 accessor: '[\"user.id\"]',
                 minWidth: 150,
             },
-            // Wolfgang Amadeus Mozart
-            {
-                header: 'User Name',
-                id: `"user.name"`,
-                accessor: '[\"user.name\"]',
-                minWidth: 150,
-            },
             // DYNATRACE; CUSTOMER; PARTNER
             {
                 header: 'User Organization',
@@ -496,6 +489,7 @@ export const SettingsLogs = () => {
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
     const userMap = useUserMap(auditLogs);
+    const fetchSettingsLogs = useSettingsAuditLogs();
 
     const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
@@ -597,30 +591,30 @@ export const SettingsLogs = () => {
 
     const getAuditLogs = async (timeFrame: Timeframe | null) => {
         setLoading(true);
-        const apiAuditLogs = await functions.call('get-audit-logs', { data: timeFrame }).then(response => response.json());
+        const records = await fetchSettingsLogs(timeFrame);
 
-        setCurrentTimeFrameLogs(apiAuditLogs.result.records);
-        setAuditLogs(apiAuditLogs.result.records);
-        setOldestLogs(apiAuditLogs.result.records);
-        setLogCount(apiAuditLogs.result.records?.length);
+        setCurrentTimeFrameLogs(records);
+        setAuditLogs(records);
+        setOldestLogs(records);
+        setLogCount(records?.length);
         setLoading(false);
 
-        const eventTypes = apiAuditLogs.result.records.map((log: Record<string, string>) => log["event.type"].toUpperCase());
+        const eventTypes = records.map((log: Record<string, string>) => log["event.type"].toUpperCase());
         const uniqueEventTypes = new Set(eventTypes);
         const uniqueEventTypesArray = [...uniqueEventTypes];
         setEventTypes(uniqueEventTypesArray);
 
-        const scopeTypes = apiAuditLogs.result.records.map((log: Record<string, string>) => log["details.dt.settings.scope_type"].toUpperCase());
+        const scopeTypes = records.map((log: Record<string, string>) => log["details.dt.settings.scope_type"].toUpperCase());
         const uniqueScopeTypes = new Set(scopeTypes);
         const uniqueScopeTypesArray = [...uniqueScopeTypes];
         setScopeTypes(uniqueScopeTypesArray);
 
-        const schemaIdss = apiAuditLogs.result.records.map((log: Record<string, string>) => log["details.dt.settings.schema_id"]);
+        const schemaIdss = records.map((log: Record<string, string>) => log["details.dt.settings.schema_id"]);
         const uniqueSchema = new Set(schemaIdss);
         const schemaArray = [...uniqueSchema];
         setschemaIds(schemaArray);
 
-        const userOrgTypes = apiAuditLogs.result.records.map((log: Record<string, string>) => log["user.organization"]);
+        const userOrgTypes = records.map((log: Record<string, string>) => log["user.organization"]);
         const userOrgSchema = new Set(userOrgTypes);
         const userOrgArray = ["ALL", ...userOrgSchema];
         setUserOrgs(userOrgArray);
