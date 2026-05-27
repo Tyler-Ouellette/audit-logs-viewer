@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { functions } from "@dynatrace-sdk/app-utils";
+import { useClassicAuditLogs } from '../hooks/useClassicAuditLogs';
 import { Page, TitleBar } from '@dynatrace/strato-components-preview/layouts';
 import { DataTable, TableActionsMenu, useFilteredData, } from '@dynatrace/strato-components-preview/tables';
 import type { DataTableColumnDef } from '@dynatrace/strato-components-preview/tables';
@@ -344,6 +344,7 @@ export const ClassicAuditLogs = () => {
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
     const userMap = useUserMap(auditLogs as any[]);
+    const fetchClassicLogs = useClassicAuditLogs();
 
     const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
@@ -443,30 +444,29 @@ export const ClassicAuditLogs = () => {
 
     const getAuditLogs = async (timeFrame: Timeframe) => {
         setLoading(true);
-        const apiAuditLogs: ClassicAuditLogsResponse = await functions.call('get-classic-audit-logs', { data: timeFrame }).then(response => response.json());
+        const records: ClassicAuditLog[] = await fetchClassicLogs(timeFrame);
 
-        setCurrentTimeFrameLogs(apiAuditLogs.result.records);
-        setAuditLogs(apiAuditLogs.result.records);
-        setOldestLogs(apiAuditLogs.result.records);
-        setLogCount(apiAuditLogs.result.records?.length.toString());
+        setCurrentTimeFrameLogs(records);
+        setAuditLogs(records);
+        setOldestLogs(records);
+        setLogCount(records?.length.toString());
         setLoading(false);
 
-        const eventTypes = apiAuditLogs.result.records
+        const eventTypes = records
             .map((log: ClassicAuditLog) => log["event.type"]?.toUpperCase())
             .filter((value): value is string => Boolean(value));
         const uniqueEventTypes = new Set(eventTypes);
         const uniqueEventTypesArray = [...uniqueEventTypes];
         setEventTypes(uniqueEventTypesArray);
 
-
-        const resources = apiAuditLogs.result.records
+        const resources = records
             .map((log: ClassicAuditLog) => log.resource)
             .filter((value): value is string => Boolean(value));
         const uniqueResources = new Set(resources);
         const resourceArray = [...uniqueResources];
         setResources(resourceArray);
 
-        const userOrgTypes = apiAuditLogs.result.records
+        const userOrgTypes = records
             .map((log: ClassicAuditLog) => log["user.organization"])
             .filter((value): value is string => Boolean(value));
         const userOrgSchema = new Set(userOrgTypes);
