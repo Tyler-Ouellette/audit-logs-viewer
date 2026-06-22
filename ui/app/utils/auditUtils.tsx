@@ -16,10 +16,10 @@ export function maskToken(v: string | undefined): string | undefined {
  * Takes a column group definition array and injects "User Full Name" and "Email" columns
  * immediately after any column with id '"user.id"', using the provided userMap for lookups.
  */
-export function injectUserColumns(
-    baseColumns: DataTableColumnDef<any>[],
+export function injectUserColumns<TData extends Record<string, unknown>>(
+    baseColumns: DataTableColumnDef<TData>[],
     userMap: Map<string, UserInfo>
-): DataTableColumnDef<any>[] {
+): DataTableColumnDef<TData>[] {
     return baseColumns.map((group: any) => {
         if (!group.columns) return group;
         const userIdIdx = group.columns.findIndex((c: any) => c.id === '"user.id"');

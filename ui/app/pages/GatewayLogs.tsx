@@ -31,7 +31,7 @@ type GatewayAuditLogsResponse = {
 
 type ClearFiltersInput = '' | 'shift' | number | React.MouseEvent<Element>;
 
-const auditColumns: DataTableColumnDef<any>[] = [
+const auditColumns: DataTableColumnDef<GatewayAuditLog>[] = [
     {
         header: 'Audit Information',
         id: 'auditInfo',
@@ -416,7 +416,7 @@ export const GatewayLogs = () => {
     const userMap = useUserMap(auditLogs);
     const fetchGatewayLogs = useGatewayAuditLogs();
 
-    const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
+    const columns = useMemo<DataTableColumnDef<GatewayAuditLog>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
@@ -820,8 +820,8 @@ export const GatewayLogs = () => {
                 </Flex>
                 {<DataTable
                     loading={loading}
-                    data={filteredData as any[]}
-                    columns={columns as any}
+                    data={filteredData}
+                    columns={columns}
                     columnVisibility={columnVisibility}
                     // columnOrder={columnOrder}
                     variant={tableVariant}

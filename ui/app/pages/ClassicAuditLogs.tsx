@@ -33,7 +33,7 @@ type ClassicAuditLogsResponse = {
 
 type ClearFiltersInput = '' | 'shift' | number | React.MouseEvent<Element>;
 
-const auditColumns: DataTableColumnDef<any>[] = [
+const auditColumns: DataTableColumnDef<ClassicAuditLog>[] = [
     {
         header: 'Audit Information',
         id: 'auditInfo',
@@ -343,10 +343,10 @@ export const ClassicAuditLogs = () => {
 
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
-    const userMap = useUserMap(auditLogs as any[]);
+    const userMap = useUserMap(auditLogs);
     const fetchClassicLogs = useClassicAuditLogs();
 
-    const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
+    const columns = useMemo<DataTableColumnDef<ClassicAuditLog>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
@@ -749,8 +749,8 @@ export const ClassicAuditLogs = () => {
                 </Flex>
                 {<DataTable
                     loading={loading}
-                    data={filteredData as any[]}
-                    columns={columns as any}
+                    data={filteredData}
+                    columns={columns}
                     columnVisibility={columnVisibility}
                     // columnOrder={columnOrder}
                     variant={tableVariant}
