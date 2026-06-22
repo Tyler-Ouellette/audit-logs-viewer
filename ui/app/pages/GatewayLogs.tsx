@@ -306,7 +306,7 @@ export const GatewayLogs = () => {
     const [oldestLogs, setOldestLogs] = useState<GatewayAuditLog[]>([]);
     const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<GatewayAuditLog[]>([]);
     const [selectedLogs, setSelectedLogs] = useState<GatewayAuditLog[]>([]);
-    const [logCount, setLogCount] = useState<string>('');
+    const [logCount, setLogCount] = useState<number>(0);
     const [selectedApps, setSelectedApps] = useState<string[]>([]);
     const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
     const [selectedFilterType, setSelectedFilterType] = useState<string>('');
@@ -416,7 +416,7 @@ export const GatewayLogs = () => {
     const userMap = useUserMap(auditLogs);
     const fetchGatewayLogs = useGatewayAuditLogs();
 
-    const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
+    const columns = useMemo<DataTableColumnDef<GatewayAuditLog>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
@@ -467,7 +467,7 @@ export const GatewayLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             setSelectedApps([]);
             return;
         }
@@ -478,7 +478,7 @@ export const GatewayLogs = () => {
                 setSelectedFilterType('')
                 setAuditLogs(currentTimeFrameLogs);
                 setSelectedFilters([]);
-                setLogCount(currentTimeFrameLogs.length.toString());
+                setLogCount(currentTimeFrameLogs.length);
                 setSelectedApps([]);
                 return;
             }
@@ -488,7 +488,7 @@ export const GatewayLogs = () => {
             setSelectedFilters(useThis);
             setSelectedApps(useThis);
             setAuditLogs(filteredLogs)
-            setLogCount(filteredLogs.length.toString());
+            setLogCount(filteredLogs.length);
             return;
         }
         if (typeof (e) == 'number') {
@@ -500,14 +500,14 @@ export const GatewayLogs = () => {
             setSelectedFilters(useThis);
             setSelectedApps(useThis);
             setAuditLogs(filteredLogs)
-            setLogCount(filteredLogs.length.toString());
+            setLogCount(filteredLogs.length);
             return;
         }
         e.preventDefault();
         setSelectedFilterType('')
         setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters([]);
-        setLogCount(currentTimeFrameLogs.length.toString());
+        setLogCount(currentTimeFrameLogs.length);
         setSelectedApps([]);
         return;
     }
@@ -519,7 +519,7 @@ export const GatewayLogs = () => {
         setCurrentTimeFrameLogs(records);
         setAuditLogs(records);
         setOldestLogs(records);
-        setLogCount(records?.length.toString());
+        setLogCount(records?.length ?? 0);
         setLoading(false);
 
         const eventTypes = records
@@ -573,7 +573,7 @@ export const GatewayLogs = () => {
                     clearFilters('')
                     setCurrentTimeFrameLogs(timestampLogsInsteadOfNew);
                     setAuditLogs(timestampLogsInsteadOfNew);
-                    setLogCount(timestampLogsInsteadOfNew.length.toString());
+                    setLogCount(timestampLogsInsteadOfNew.length);
                     return;
                 }
                 // SelectedDate > oldest date, selected is NEWER than oldest Date, therefore filter instead of query
@@ -585,7 +585,7 @@ export const GatewayLogs = () => {
 
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
-                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                    setLogCount(filteredLogsInsteadofFetchingNew.length);
                 }
                 else {
                     const useThese = [...oldestLogs];
@@ -597,7 +597,7 @@ export const GatewayLogs = () => {
                     clearFilters('')
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
-                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                    setLogCount(filteredLogsInsteadofFetchingNew.length);
                 }
 
             }
@@ -620,7 +620,7 @@ export const GatewayLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -628,7 +628,7 @@ export const GatewayLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([selectedValue]);
         setSelectedFilterType('Event Type')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
 
     }
 
@@ -639,7 +639,7 @@ export const GatewayLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -647,7 +647,7 @@ export const GatewayLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([selectedValue]);
         setSelectedFilterType('App Id')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
     }
 
     const handleOrgTypeClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -657,7 +657,7 @@ export const GatewayLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -665,7 +665,7 @@ export const GatewayLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([selectedValue]);
         setSelectedFilterType('User Organization')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
     }
 
     const handleSelectApp = (e: string[]) => {
@@ -675,7 +675,7 @@ export const GatewayLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
 
@@ -684,7 +684,7 @@ export const GatewayLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('App Id');
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
         setSelectedApps(e);
     }
 
@@ -771,7 +771,7 @@ export const GatewayLogs = () => {
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
                         <TitleBar.Title>View Audit Logs - API Gateway</TitleBar.Title>
-                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
+                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount === 1000 ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
                             Selected Filter:
                             <Grid gridTemplateColumns={'repeat(3, 250px)'}>
                                 {selectedFilters?.map((filter, index) => {
@@ -851,7 +851,7 @@ export const GatewayLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Event Type');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
 
 
                                         }}
@@ -875,7 +875,7 @@ export const GatewayLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Category');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -897,7 +897,7 @@ export const GatewayLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('User Type');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -919,7 +919,7 @@ export const GatewayLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('App Id');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                             setSelectedApps([String(cellValue ?? '')]);
                                         }}
                                     >

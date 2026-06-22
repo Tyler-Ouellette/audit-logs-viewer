@@ -10,13 +10,13 @@ export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
  * Fetches IAM user info for all unique user.id UUIDs present in the given audit log rows.
  * Returns a map from UUID to UserInfo.
  */
-export function useUserMap(auditLogs: any[]): Map<string, UserInfo> {
+export function useUserMap(auditLogs: Record<string, unknown>[]): Map<string, UserInfo> {
     const [userMap, setUserMap] = useState<Map<string, UserInfo>>(new Map());
 
     useEffect(() => {
         const uuids = [...new Set(
-            auditLogs.map((r: any) => r['user.id']).filter((id: any) => id && UUID_REGEX.test(id))
-        )] as string[];
+            auditLogs.map((r) => r['user.id']).filter((id): id is string => typeof id === 'string' && UUID_REGEX.test(id))
+        )];
         if (uuids.length === 0) return;
         const batches: string[][] = [];
         for (let i = 0; i < uuids.length; i += 25) batches.push(uuids.slice(i, i + 25));

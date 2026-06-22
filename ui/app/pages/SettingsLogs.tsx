@@ -400,7 +400,7 @@ export const SettingsLogs = () => {
     const [oldestLogs, setOldestLogs] = useState<Array<any>>([]);
     const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<Array<any>>([]);
     const [selectedLogs, setSelectedLogs] = useState<Array<any>>([]);
-    const [logCount, setLogCount] = useState<string>('');
+    const [logCount, setLogCount] = useState<number>(0);
     const [selectedSchemas, setSelectedSchemas] = useState<Array<any>>([]);
     const [selectedFilters, setSelectedFilters] = useState<Array<any>>([]);
     const [selectedFilterType, setSelectedFilterType] = useState<string>('');
@@ -542,7 +542,7 @@ export const SettingsLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             setSelectedSchemas([]);
             return;
         }
@@ -553,7 +553,7 @@ export const SettingsLogs = () => {
                 setSelectedFilterType('')
                 setAuditLogs(currentTimeFrameLogs);
                 setSelectedFilters([]);
-                setLogCount(currentTimeFrameLogs.length.toString());
+                setLogCount(currentTimeFrameLogs.length);
                 setSelectedSchemas([]);
                 return;
             }
@@ -563,7 +563,7 @@ export const SettingsLogs = () => {
             setSelectedFilters(useThis);
             setSelectedSchemas(useThis);
             setAuditLogs(filteredLogs)
-            setLogCount(filteredLogs.length.toString());
+            setLogCount(filteredLogs.length);
             return;
         }
         if (typeof(e) == 'number'){
@@ -575,7 +575,7 @@ export const SettingsLogs = () => {
             setSelectedFilters(useThis);
             setSelectedSchemas(useThis);
             setAuditLogs(filteredLogs)
-            setLogCount(filteredLogs.length.toString());
+            setLogCount(filteredLogs.length);
             return;
         }
         if (typeof e === 'object' && 'preventDefault' in e) {
@@ -584,7 +584,7 @@ export const SettingsLogs = () => {
         setSelectedFilterType('')
         setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters([]);
-        setLogCount(currentTimeFrameLogs.length.toString());
+        setLogCount(currentTimeFrameLogs.length);
         setSelectedSchemas([]);
         return;
     }
@@ -596,7 +596,7 @@ export const SettingsLogs = () => {
         setCurrentTimeFrameLogs(records);
         setAuditLogs(records);
         setOldestLogs(records);
-        setLogCount(records?.length);
+        setLogCount(records?.length ?? 0);
         setLoading(false);
 
         const eventTypes = records.map((log: Record<string, string>) => log["event.type"].toUpperCase());
@@ -647,7 +647,7 @@ export const SettingsLogs = () => {
                     clearFilters('')
                     setCurrentTimeFrameLogs(timestampLogsInsteadOfNew);
                     setAuditLogs(timestampLogsInsteadOfNew);
-                    setLogCount(timestampLogsInsteadOfNew.length.toString());
+                    setLogCount(timestampLogsInsteadOfNew.length);
                     return;
                 }
                 // SelectedDate > oldest date, selected is NEWER than oldest Date, therefore filter instead of query
@@ -659,7 +659,7 @@ export const SettingsLogs = () => {
 
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
-                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                    setLogCount(filteredLogsInsteadofFetchingNew.length);
                 }
                 else {
                     const useThese = [...oldestLogs];
@@ -671,7 +671,7 @@ export const SettingsLogs = () => {
                     clearFilters('')
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
-                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                    setLogCount(filteredLogsInsteadofFetchingNew.length);
                 }
 
             }
@@ -693,7 +693,7 @@ export const SettingsLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -701,7 +701,7 @@ export const SettingsLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([target.innerText]);
         setSelectedFilterType('Event Type')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
 
     }
 
@@ -712,7 +712,7 @@ export const SettingsLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -720,7 +720,7 @@ export const SettingsLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([target.innerText]);
         setSelectedFilterType('Scope Type')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
     }
 
     const handleOrgTypeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -730,7 +730,7 @@ export const SettingsLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -738,7 +738,7 @@ export const SettingsLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([target.innerText]);
         setSelectedFilterType('User Organization')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
     }
 
     const handleSelectSchema = (e: string[]) => {
@@ -747,7 +747,7 @@ export const SettingsLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
 
@@ -756,7 +756,7 @@ export const SettingsLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('Schema Id');
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
         setSelectedSchemas(e);
     }
 
@@ -837,7 +837,7 @@ export const SettingsLogs = () => {
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
                         <TitleBar.Title>View Audit Logs - Settings Changes</TitleBar.Title>
-                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
+                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount === 1000 ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
                             Selected Filter:
                             <Grid gridTemplateColumns={'repeat(3, 250px)'}>
                                 {selectedFilters?.map((filter, index) => {
@@ -917,7 +917,7 @@ export const SettingsLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Event Type');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
 
 
                                         }}
@@ -941,7 +941,7 @@ export const SettingsLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Category');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -963,7 +963,7 @@ export const SettingsLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cellValue]);
                                             setSelectedFilterType('User Type');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -985,7 +985,7 @@ export const SettingsLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([cellValue]);
                                             setSelectedFilterType('Schema Id');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                             setSelectedSchemas([cellValue]);
                                         }}
                                     >

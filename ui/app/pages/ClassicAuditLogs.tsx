@@ -251,7 +251,7 @@ export const ClassicAuditLogs = () => {
     const [oldestLogs, setOldestLogs] = useState<ClassicAuditLog[]>([]);
     const [currentTimeFrameLogs, setCurrentTimeFrameLogs] = useState<ClassicAuditLog[]>([]);
     const [selectedLogs, setSelectedLogs] = useState<ClassicAuditLog[]>([]);
-    const [logCount, setLogCount] = useState<string>('');
+    const [logCount, setLogCount] = useState<number>(0);
     const [selectedResources, setSelectedResources] = useState<string[]>([]);
     const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
     const [selectedFilterType, setSelectedFilterType] = useState<string>('');
@@ -343,10 +343,10 @@ export const ClassicAuditLogs = () => {
 
     const { onChange, filteredData } = useFilteredData(auditData, filterFn);
     const [rowDensity, setRowDensity] = useState('default');
-    const userMap = useUserMap(auditLogs as any[]);
+    const userMap = useUserMap(auditLogs);
     const fetchClassicLogs = useClassicAuditLogs();
 
-    const columns = useMemo<DataTableColumnDef<any>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
+    const columns = useMemo<DataTableColumnDef<ClassicAuditLog>[]>(() => injectUserColumns(auditColumns, userMap), [userMap]);
 
     type ColumnVisibilityType = Record<string, boolean>;
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityType>({});
@@ -397,7 +397,7 @@ export const ClassicAuditLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             setSelectedResources([]);
             return;
         }
@@ -408,7 +408,7 @@ export const ClassicAuditLogs = () => {
                 setSelectedFilterType('')
                 setSelectedResources([]);
                 setSelectedFilters([]);
-                setLogCount(currentTimeFrameLogs.length.toString());
+                setLogCount(currentTimeFrameLogs.length);
                 setSelectedResources([]);
                 return;
             }
@@ -418,7 +418,7 @@ export const ClassicAuditLogs = () => {
             setSelectedFilters(useThis);
             setSelectedResources(useThis);
             setAuditLogs(filteredLogs)
-            setLogCount(filteredLogs.length.toString());
+            setLogCount(filteredLogs.length);
             return;
         }
         if (typeof (e) == 'number') {
@@ -430,14 +430,14 @@ export const ClassicAuditLogs = () => {
             setSelectedFilters(useThis);
             setSelectedResources(useThis);
             setAuditLogs(filteredLogs)
-            setLogCount(filteredLogs.length.toString());
+            setLogCount(filteredLogs.length);
             return;
         }
         e.preventDefault();
         setSelectedFilterType('')
         setAuditLogs(currentTimeFrameLogs);
         setSelectedFilters([]);
-        setLogCount(currentTimeFrameLogs.length.toString());
+        setLogCount(currentTimeFrameLogs.length);
     setSelectedResources([]);
         return;
     }
@@ -449,7 +449,7 @@ export const ClassicAuditLogs = () => {
         setCurrentTimeFrameLogs(records);
         setAuditLogs(records);
         setOldestLogs(records);
-        setLogCount(records?.length.toString());
+        setLogCount(records?.length ?? 0);
         setLoading(false);
 
         const eventTypes = records
@@ -503,7 +503,7 @@ export const ClassicAuditLogs = () => {
                     clearFilters('')
                     setCurrentTimeFrameLogs(timestampLogsInsteadOfNew);
                     setAuditLogs(timestampLogsInsteadOfNew);
-                    setLogCount(timestampLogsInsteadOfNew.length.toString());
+                    setLogCount(timestampLogsInsteadOfNew.length);
                     return;
                 }
                 // SelectedDate > oldest date, selected is NEWER than oldest Date, therefore filter instead of query
@@ -515,7 +515,7 @@ export const ClassicAuditLogs = () => {
 
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
-                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                    setLogCount(filteredLogsInsteadofFetchingNew.length);
                 }
                 else {
                     const useThese = [...oldestLogs];
@@ -527,7 +527,7 @@ export const ClassicAuditLogs = () => {
                     clearFilters('')
                     setCurrentTimeFrameLogs(filteredLogsInsteadofFetchingNew);
                     setAuditLogs(filteredLogsInsteadofFetchingNew);
-                    setLogCount(filteredLogsInsteadofFetchingNew.length.toString());
+                    setLogCount(filteredLogsInsteadofFetchingNew.length);
                 }
 
             }
@@ -550,7 +550,7 @@ export const ClassicAuditLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -558,7 +558,7 @@ export const ClassicAuditLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([selectedValue]);
         setSelectedFilterType('Event Type')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
 
     }
 
@@ -569,7 +569,7 @@ export const ClassicAuditLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -577,7 +577,7 @@ export const ClassicAuditLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([selectedValue]);
         setSelectedFilterType('Resource')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
     }
 
     const handleOrgTypeClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -587,7 +587,7 @@ export const ClassicAuditLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
         const useThese = [...currentTimeFrameLogs];
@@ -595,7 +595,7 @@ export const ClassicAuditLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters([selectedValue]);
         setSelectedFilterType('User Organization')
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
     }
 
     const handleSelectResource = (e: string[]) => {
@@ -605,7 +605,7 @@ export const ClassicAuditLogs = () => {
             setSelectedFilterType('')
             setAuditLogs(currentTimeFrameLogs);
             setSelectedFilters([]);
-            setLogCount(currentTimeFrameLogs.length.toString());
+            setLogCount(currentTimeFrameLogs.length);
             return;
         }
 
@@ -614,7 +614,7 @@ export const ClassicAuditLogs = () => {
         setAuditLogs(filteredLogs);
         setSelectedFilters(e);
         setSelectedFilterType('Resource');
-        setLogCount(filteredLogs.length.toString());
+        setLogCount(filteredLogs.length);
         setSelectedResources(e);
     }
 
@@ -700,7 +700,7 @@ export const ClassicAuditLogs = () => {
                             <Page.PanelControlButton target="sidebar" />
                         </TitleBar.Prefix>
                         <TitleBar.Title>View Audit Logs - Classic API</TitleBar.Title>
-                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount == '1000' ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
+                        <TitleBar.Subtitle>Audit Log Count: {logCount} {logCount === 1000 ? <div style={{ color: Colors.Text.Warning.Default, display: 'flex', alignItems: 'center' }}> <WarningIcon /> Log Limit 1000 records reached</div> : <br />}
                             Selected Filter:
                             <Grid gridTemplateColumns={'repeat(3, 250px)'}>
                                 {selectedFilters?.map((filter, index) => {
@@ -780,7 +780,7 @@ export const ClassicAuditLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Event Type');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
 
 
                                         }}
@@ -804,7 +804,7 @@ export const ClassicAuditLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Category');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -826,7 +826,7 @@ export const ClassicAuditLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('User Type');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                         }}
                                     >
                                         <TableActionsMenu.Prefix>
@@ -848,7 +848,7 @@ export const ClassicAuditLogs = () => {
                                             setAuditLogs(filteredLogs);
                                             setSelectedFilters([String(cellValue ?? '')]);
                                             setSelectedFilterType('Resource');
-                                            setLogCount(filteredLogs.length.toString());
+                                            setLogCount(filteredLogs.length);
                                             setSelectedResources([String(cellValue ?? '')]);
                                         }}
                                     >
